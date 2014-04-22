@@ -4,9 +4,12 @@ buildscript {
     }
     dependencies {
         classpath 'com.android.tools.build:gradle:0.9.+'
+        classpath 'com.alexvasilkov:android_sign:0.2'
     }
 }
+
 apply plugin: 'android'
+apply plugin: 'android_sign'
 
 android {
     compileSdkVersion 19
@@ -22,6 +25,19 @@ android {
     buildTypes {
         release {
             runProguard false
+        }
+    }
+
+    signingConfigs {
+        release {
+            storeFile file("foldable-layout-release-key.keystore")
+            keyAlias "release"
+        }
+    }
+
+    buildTypes {
+        release {
+            signingConfig signingConfigs.release
         }
     }
 }
