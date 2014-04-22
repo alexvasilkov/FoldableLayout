@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ListView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/list_view"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:cacheColorHint="@android:color/transparent"
+    android:divider="@android:color/transparent"
+    android:dividerHeight="12dp"
+    android:padding="12dp"
+    android:listSelector="@android:color/transparent"
+    android:scrollingCache="false"
+    android:clipToPadding="false"
+    android:fadeScrollbars="true"
+    android:scrollbarStyle="outsideOverlay" />
