@@ -1,24 +1,6 @@
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
-buildscript {
-    repositories {
-        mavenCentral()
-    }
-
-    dependencies {
-        classpath 'com.android.tools.build:gradle:0.9.+'
-    }
-}
-
-def isReleaseBuild() {
-    return version.contains("SNAPSHOT") == false
-}
-
 allprojects {
-    version = VERSION_NAME
-    group = GROUP
-
     repositories {
         mavenCentral()
-        maven { url 'https://oss.sonatype.org/content/groups/public' }
     }
 }

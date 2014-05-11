@@ -12,20 +12,14 @@ apply plugin: 'android'
 apply plugin: 'android_sign'
 
 android {
-    compileSdkVersion 19
-    buildToolsVersion "19.0.3"
+    compileSdkVersion Integer.parseInt(ANDROID_COMPILE_SDK)
+    buildToolsVersion ANDROID_BUILD_TOOLS_VERSION
 
     defaultConfig {
-        minSdkVersion 14
-        targetSdkVersion 19
-        versionCode 1
-        versionName "1.0"
-    }
-
-    buildTypes {
-        release {
-            runProguard false
-        }
+        minSdkVersion Integer.parseInt(ANDROID_MIN_SDK)
+        targetSdkVersion Integer.parseInt(ANDROID_TARGET_SDK)
+        versionCode Integer.parseInt(VERSION_CODE)
+        versionName VERSION_NAME
     }
 
     signingConfigs {
