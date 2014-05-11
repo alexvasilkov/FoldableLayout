@@ -9,6 +9,7 @@ import android.widget.TextView;
 import com.alexvasilkov.foldablelayout.sample.R;
 import com.alexvasilkov.foldablelayout.sample.activities.UnfoldableDetailsActivity;
 import com.azcltd.fluffycommons.adapters.ItemsAdapter;
+import com.azcltd.fluffycommons.utils.Views;
 import com.squareup.picasso.Picasso;
 
 import java.util.Arrays;
@@ -24,9 +25,9 @@ public class PaintingsAdapter extends ItemsAdapter<Painting> implements View.OnC
     protected View createView(Painting item, int pos, ViewGroup parent, LayoutInflater inflater) {
         View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.list_item, parent, false);
         ViewHolder vh = new ViewHolder();
-        vh.image = (ImageView) view.findViewById(R.id.list_item_image);
+        vh.image = Views.find(view, R.id.list_item_image);
         vh.image.setOnClickListener(this);
-        vh.title = (TextView) view.findViewById(R.id.list_item_title);
+        vh.title = Views.find(view, R.id.list_item_title);
         view.setTag(vh);
 
         return view;

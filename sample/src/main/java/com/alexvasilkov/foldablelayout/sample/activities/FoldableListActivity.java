@@ -4,6 +4,7 @@ import android.os.Bundle;
 import com.alexvasilkov.foldablelayout.FoldableListLayout;
 import com.alexvasilkov.foldablelayout.sample.R;
 import com.alexvasilkov.foldablelayout.sample.items.PaintingsAdapter;
+import com.azcltd.fluffycommons.utils.Views;
 
 public class FoldableListActivity extends BaseActivity {
 
@@ -12,7 +13,7 @@ public class FoldableListActivity extends BaseActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_foldable_list);
 
-        FoldableListLayout foldableListLayout = (FoldableListLayout) findViewById(R.id.foldable_list);
+        FoldableListLayout foldableListLayout = Views.find(this, R.id.foldable_list);
         foldableListLayout.setAdapter(new PaintingsAdapter(this));
     }
 
