@@ -3,19 +3,31 @@ FoldableLayout
 
 Android widgets to implement folding animation.
 
+[![Demo video](http://img.youtube.com/vi/-_QcWMh-O5g/0.jpg)](http://www.youtube.com/watch?v=-_QcWMh-O5g)
+
 #### Sample app ####
 
 [![Get it on Google Play](http://www.android.com/images/brand/get_it_on_play_logo_small.png)](http://play.google.com/store/apps/details?id=com.alexvasilkov.foldablelayout.sample)
 
-#### Video ####
-
-[![Demo video](http://img.youtube.com/vi/-_QcWMh-O5g/0.jpg)](http://www.youtube.com/watch?v=-_QcWMh-O5g)
-
 #### Usage ####
 
-Library is not available in Maven Central currently, so you need to clone and add it as library project to your Android project.
+Note: **minimum Android SDK version is 14**.
 
-Note: minimum Android SDK version is 14.
+Add dependency to your build.gradle file:
+
+    compile 'com.alexvasilkov:foldable-layout:1.0.1'
+
+[Unfoldable details usage ](https://github.com/alexvasilkov/FoldableLayout/wiki/Unfoldable-details-usage)
+
+[Foldable list usage](https://github.com/alexvasilkov/FoldableLayout/wiki/Foldable-list-usage)
+
+[API reference](https://github.com/alexvasilkov/FoldableLayout/wiki/API-reference)
+
+See [sample app sources](https://github.com/alexvasilkov/FoldableLayout/tree/master/sample) for complete usage example.
+
+#### Basic library concepts ####
+
+Read [this blog post](http://cases.azoft.com/creating-paper-folding-animation-in-android/).
 
 #### License ####
 
