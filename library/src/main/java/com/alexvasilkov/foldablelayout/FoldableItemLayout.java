@@ -7,7 +7,7 @@ import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
-import com.alexvasilkov.foldablelayout.shadow.FoldShadow;
+import com.alexvasilkov.foldablelayout.shading.FoldShading;
 
 /**
  * Layout that provides basic funcitionality: splitting view into 2 parts, splitted parts syncronouse rotations and so on
@@ -152,9 +152,9 @@ public class FoldableItemLayout extends FrameLayout {
         mBottomPart.setVisibleBounds(visibleBounds);
     }
 
-    public void setFoldShader(FoldShadow shader) {
-        mTopPart.setFoldShader(shader);
-        mBottomPart.setFoldShader(shader);
+    public void setFoldShading(FoldShading shading) {
+        mTopPart.setFoldShading(shading);
+        mBottomPart.setFoldShading(shading);
     }
 
 
@@ -233,7 +233,7 @@ public class FoldableItemLayout extends FrameLayout {
         private int mExtrenalVisibility;
 
         private float mLocalFoldRotation;
-        private FoldShadow mShader;
+        private FoldShading mShading;
 
         public PartView(FoldableItemLayout parent, int gravity) {
             super(parent.getContext());
@@ -260,8 +260,8 @@ public class FoldableItemLayout extends FrameLayout {
             calculateBitmapBounds();
         }
 
-        private void setFoldShader(FoldShadow shader) {
-            mShader = shader;
+        private void setFoldShading(FoldShading shading) {
+            mShading = shading;
         }
 
         private void calculateBitmapBounds() {
@@ -350,9 +350,9 @@ public class FoldableItemLayout extends FrameLayout {
 
         @Override
         public void draw(Canvas canvas) {
-            if (mShader != null) mShader.onPreDraw(canvas, mBitmapBounds, mLocalFoldRotation, mGravity);
+            if (mShading != null) mShading.onPreDraw(canvas, mBitmapBounds, mLocalFoldRotation, mGravity);
             if (mBitmap != null) canvas.drawBitmap(mBitmap, mBitmapBounds, mBitmapBounds, mBitmapPaint);
-            if (mShader != null) mShader.onPostDraw(canvas, mBitmapBounds, mLocalFoldRotation, mGravity);
+            if (mShading != null) mShading.onPostDraw(canvas, mBitmapBounds, mLocalFoldRotation, mGravity);
         }
 
     }

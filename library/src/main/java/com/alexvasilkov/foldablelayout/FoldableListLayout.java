@@ -12,8 +12,8 @@ import android.view.View;
 import android.view.ViewConfiguration;
 import android.widget.BaseAdapter;
 import android.widget.FrameLayout;
-import com.alexvasilkov.foldablelayout.shadow.FoldShadow;
-import com.alexvasilkov.foldablelayout.shadow.SimpleFoldShadow;
+import com.alexvasilkov.foldablelayout.shading.FoldShading;
+import com.alexvasilkov.foldablelayout.shading.SimpleFoldShading;
 
 import java.util.LinkedList;
 import java.util.Queue;
@@ -38,7 +38,7 @@ public class FoldableListLayout extends FrameLayout implements GestureDetector.O
     private float mMinRotation, mMaxRotation;
 
     private FoldableItemLayout mFirstLayout, mSecondLayout;
-    private FoldShadow mFoldShader;
+    private FoldShading mFoldShading;
 
     private SparseArray<FoldableItemLayout> mFoldableLayoutsMap = new SparseArray<FoldableItemLayout>();
     private Queue<FoldableItemLayout> mFoldableLayoutsCache = new LinkedList<FoldableItemLayout>();
@@ -73,7 +73,7 @@ public class FoldableListLayout extends FrameLayout implements GestureDetector.O
         mAnimator = ObjectAnimator.ofFloat(this, "foldRotation", 0);
         mMinDistanceBeforeScroll = ViewConfiguration.get(context).getScaledPagingTouchSlop();
 
-        mFoldShader = new SimpleFoldShadow();
+        mFoldShading = new SimpleFoldShading();
     }
 
     @Override
@@ -106,10 +106,10 @@ public class FoldableListLayout extends FrameLayout implements GestureDetector.O
     }
 
     /**
-     * Setting shader to use during fold rotation. Should be called before {@link #setAdapter(android.widget.BaseAdapter)}
+     * Setting shading to use during fold rotation. Should be called before {@link #setAdapter(android.widget.BaseAdapter)}
      */
-    public void setFoldShader(FoldShadow shader) {
-        mFoldShader = shader;
+    public void setFoldShading(FoldShading shading) {
+        mFoldShading = shading;
     }
 
     public void setAdapter(BaseAdapter adapter) {
@@ -143,6 +143,8 @@ public class FoldableListLayout extends FrameLayout implements GestureDetector.O
     }
 
     protected void setFoldRotation(float rotation, boolean isFromUser) {
+        if (isFromUser) mAnimator.cancel();
+
         rotation = Math.min(Math.max(mMinRotation, rotation), mMaxRotation);
 
         mFoldRotation = rotation;
@@ -219,7 +221,7 @@ public class FoldableListLayout extends FrameLayout implements GestureDetector.O
         if (layout == null) {
             // if still no suited layout - create it
             layout = new FoldableItemLayout(getContext());
-            layout.setFoldShader(mFoldShader);
+            layout.setFoldShading(mFoldShading);
             addView(layout, PARAMS);
         }
 

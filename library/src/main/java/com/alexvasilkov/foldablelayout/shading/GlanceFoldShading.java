@@ -1,10 +1,10 @@
-package com.alexvasilkov.foldablelayout.shadow;
+package com.alexvasilkov.foldablelayout.shading;
 
 import android.content.Context;
 import android.graphics.*;
 import android.view.Gravity;
 
-public class GlanceFoldShadow implements FoldShadow {
+public class GlanceFoldShading implements FoldShading {
 
     private static final int SHADOW_COLOR = Color.BLACK;
     private static final int SHADOW_MAX_ALPHA = 192;
@@ -16,7 +16,7 @@ public class GlanceFoldShadow implements FoldShadow {
     private final Rect mGlanceFrom;
     private final Rect mGlanceTo;
 
-    public GlanceFoldShadow(Context context, Bitmap glance) {
+    public GlanceFoldShading(Context context, Bitmap glance) {
         mSolidShadow = new Paint();
         mSolidShadow.setColor(SHADOW_COLOR);
 
