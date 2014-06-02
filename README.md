@@ -1,13 +1,15 @@
 FoldableLayout
 ==============
 
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.alexvasilkov/foldable-layout/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.alexvasilkov/foldable-layout)
+
 Android widgets to implement folding animation.
 
 [![Demo video](http://img.youtube.com/vi/-_QcWMh-O5g/0.jpg)](http://www.youtube.com/watch?v=-_QcWMh-O5g)
 
 #### Sample app ####
 
-[![Get it on Google Play](http://www.android.com/images/brand/get_it_on_play_logo_small.png)](http://play.google.com/store/apps/details?id=com.alexvasilkov.foldablelayout.sample)
+[![Get it on Google Play](http://developer.android.com/images/brand/en_generic_rgb_wo_60.png)](http://play.google.com/store/apps/details?id=com.alexvasilkov.foldablelayout.sample)
 
 #### Usage ####
 
