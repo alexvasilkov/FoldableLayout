@@ -6,10 +6,11 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+
+import com.alexvasilkov.android.commons.adapters.ItemsAdapter;
+import com.alexvasilkov.android.commons.utils.Views;
 import com.alexvasilkov.foldablelayout.sample.R;
 import com.alexvasilkov.foldablelayout.sample.activities.UnfoldableDetailsActivity;
-import com.azcltd.fluffycommons.adapters.ItemsAdapter;
-import com.azcltd.fluffycommons.utils.Views;
 import com.squareup.picasso.Picasso;
 
 import java.util.Arrays;
@@ -38,7 +39,7 @@ public class PaintingsAdapter extends ItemsAdapter<Painting> implements View.OnC
         ViewHolder vh = (ViewHolder) convertView.getTag();
 
         vh.image.setTag(item);
-        Picasso.with(convertView.getContext()).load(item.getImageId()).into(vh.image);
+        Picasso.with(convertView.getContext()).load(item.getImageId()).noFade().into(vh.image);
         vh.title.setText(item.getTitle());
     }
 

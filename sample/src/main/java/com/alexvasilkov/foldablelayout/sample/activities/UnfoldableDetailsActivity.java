@@ -8,13 +8,14 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
+
+import com.alexvasilkov.android.commons.texts.SpannableBuilder;
+import com.alexvasilkov.android.commons.utils.Views;
 import com.alexvasilkov.foldablelayout.UnfoldableView;
 import com.alexvasilkov.foldablelayout.sample.R;
 import com.alexvasilkov.foldablelayout.sample.items.Painting;
 import com.alexvasilkov.foldablelayout.sample.items.PaintingsAdapter;
 import com.alexvasilkov.foldablelayout.shading.GlanceFoldShading;
-import com.azcltd.fluffycommons.texts.SpannableBuilder;
-import com.azcltd.fluffycommons.utils.Views;
 import com.squareup.picasso.Picasso;
 
 public class UnfoldableDetailsActivity extends BaseActivity {

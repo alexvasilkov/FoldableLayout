@@ -1,10 +1,11 @@
 package com.alexvasilkov.foldablelayout.sample.activities;
 
 import android.os.Bundle;
+
+import com.alexvasilkov.android.commons.utils.Views;
 import com.alexvasilkov.foldablelayout.FoldableListLayout;
 import com.alexvasilkov.foldablelayout.sample.R;
 import com.alexvasilkov.foldablelayout.sample.items.PaintingsAdapter;
-import com.azcltd.fluffycommons.utils.Views;
 
 public class FoldableListActivity extends BaseActivity {
 

@@ -1,16 +1,21 @@
 package com.alexvasilkov.foldablelayout;
 
 import android.content.Context;
-import android.graphics.*;
-import android.util.AttributeSet;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.graphics.Paint;
+import android.graphics.PorterDuff;
+import android.graphics.Rect;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
+
 import com.alexvasilkov.foldablelayout.shading.FoldShading;
 
 /**
- * Layout that provides basic funcitionality: splitting view into 2 parts, splitted parts syncronouse rotations and so on
+ * Provides basic functionality for fold animation: splitting view into 2 parts,
+ * synchronous rotation of both parts and so on.
  */
 public class FoldableItemLayout extends FrameLayout {
 
@@ -19,8 +24,8 @@ public class FoldableItemLayout extends FrameLayout {
 
     private boolean mIsAutoScaleEnabled;
 
-    private BaseLayout mBaseLayout;
-    private PartView mTopPart, mBottomPart;
+    private final BaseLayout mBaseLayout;
+    private final PartView mTopPart, mBottomPart;
 
     private int mWidth, mHeight;
     private Bitmap mCacheBitmap;
@@ -33,20 +38,7 @@ public class FoldableItemLayout extends FrameLayout {
 
     public FoldableItemLayout(Context context) {
         super(context);
-        init(context);
-    }
 
-    public FoldableItemLayout(Context context, AttributeSet attrs) {
-        super(context, attrs);
-        init(context);
-    }
-
-    public FoldableItemLayout(Context context, AttributeSet attrs, int defStyle) {
-        super(context, attrs, defStyle);
-        init(context);
-    }
-
-    private void init(Context context) {
         mBaseLayout = new BaseLayout(this);
 
         mTopPart = new PartView(this, Gravity.TOP);
@@ -62,23 +54,42 @@ public class FoldableItemLayout extends FrameLayout {
     }
 
     @Override
-    protected void onSizeChanged(int w, int h, int oldw, int oldh) {
-        super.onSizeChanged(w, h, oldw, oldh);
+    protected void dispatchDraw(Canvas canvas) {
+        if (mFoldRotation != 0) {
+            ensureCacheBitmap();
+        }
 
-        mWidth = w;
-        mHeight = h;
+        super.dispatchDraw(canvas);
+    }
+
+    private void ensureCacheBitmap() {
+        mWidth = getWidth();
+        mHeight = getHeight();
+
+        // Check if correct cache bitmap is already created
+        if (mCacheBitmap != null && mCacheBitmap.getWidth() == mWidth
+                && mCacheBitmap.getHeight() == mHeight) return;
 
         if (mCacheBitmap != null) {
             mCacheBitmap.recycle();
             mCacheBitmap = null;
         }
 
-        mCacheBitmap = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);
+        if (mWidth != 0 && mHeight != 0) {
+            try {
+                mCacheBitmap = Bitmap.createBitmap(mWidth, mHeight, Bitmap.Config.ARGB_8888);
+            } catch (OutOfMemoryError outOfMemoryError) {
+                mCacheBitmap = null;
+            }
+        }
 
-        mBaseLayout.setCacheCanvas(new Canvas(mCacheBitmap));
+        applyCacheBitmap(mCacheBitmap);
+    }
 
-        mTopPart.setCacheBitmap(mCacheBitmap);
-        mBottomPart.setCacheBitmap(mCacheBitmap);
+    private void applyCacheBitmap(Bitmap bitmap) {
+        mBaseLayout.setCacheCanvas(bitmap == null ? null : new Canvas(bitmap));
+        mTopPart.setCacheBitmap(bitmap);
+        mBottomPart.setCacheBitmap(bitmap);
     }
 
     /**
@@ -193,8 +204,10 @@ public class FoldableItemLayout extends FrameLayout {
         @Override
         public void draw(Canvas canvas) {
             if (mIsDrawToCache) {
-                mCacheCanvas.drawColor(0, PorterDuff.Mode.CLEAR);
-                super.draw(mCacheCanvas);
+                if (mCacheCanvas != null) {
+                    mCacheCanvas.drawColor(0, PorterDuff.Mode.CLEAR);
+                    super.draw(mCacheCanvas);
+                }
             } else {
                 super.draw(canvas);
             }
@@ -213,7 +226,7 @@ public class FoldableItemLayout extends FrameLayout {
     }
 
     /**
-     * Splitted part view. It will draw top or bottom part of cached bitmap and overlay shadows.
+     * Splat part view. It will draw top or bottom part of cached bitmap and overlay shadows.
      * Also it contains main logic for all transformations (fold rotation, scale, "rolling distance").
      */
     private static class PartView extends View {
@@ -230,7 +243,7 @@ public class FoldableItemLayout extends FrameLayout {
         private Rect mVisibleBounds;
 
         private int mInternalVisibility;
-        private int mExtrenalVisibility;
+        private int mExternalVisibility;
 
         private float mLocalFoldRotation;
         private FoldShading mShading;
@@ -289,7 +302,7 @@ public class FoldableItemLayout extends FrameLayout {
             float position = rotation;
             while (position < 0) position += 360;
             position %= 360;
-            if (position > 180) position -= 360; // now poistion within (-180; 180]
+            if (position > 180) position -= 360; // now position within (-180; 180]
 
             float rotationX = 0;
             boolean isVisible = true;
@@ -340,19 +353,22 @@ public class FoldableItemLayout extends FrameLayout {
 
         @Override
         public void setVisibility(int visibility) {
-            mExtrenalVisibility = visibility;
+            mExternalVisibility = visibility;
             applyVisibility();
         }
 
         private void applyVisibility() {
-            super.setVisibility(mExtrenalVisibility == VISIBLE ? mInternalVisibility : mExtrenalVisibility);
+            super.setVisibility(mExternalVisibility == VISIBLE ? mInternalVisibility : mExternalVisibility);
         }
 
         @Override
         public void draw(Canvas canvas) {
-            if (mShading != null) mShading.onPreDraw(canvas, mBitmapBounds, mLocalFoldRotation, mGravity);
-            if (mBitmap != null) canvas.drawBitmap(mBitmap, mBitmapBounds, mBitmapBounds, mBitmapPaint);
-            if (mShading != null) mShading.onPostDraw(canvas, mBitmapBounds, mLocalFoldRotation, mGravity);
+            if (mShading != null)
+                mShading.onPreDraw(canvas, mBitmapBounds, mLocalFoldRotation, mGravity);
+            if (mBitmap != null)
+                canvas.drawBitmap(mBitmap, mBitmapBounds, mBitmapBounds, mBitmapPaint);
+            if (mShading != null)
+                mShading.onPostDraw(canvas, mBitmapBounds, mLocalFoldRotation, mGravity);
         }
 
     }

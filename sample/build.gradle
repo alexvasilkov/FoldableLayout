@@ -4,7 +4,7 @@ buildscript {
     }
     dependencies {
         classpath 'com.android.tools.build:gradle:0.12.2'
-        classpath 'com.alexvasilkov:android-sign-release:0.3.6'
+        classpath 'com.alexvasilkov:android-sign-release:0.4'
     }
 }
 
@@ -40,5 +40,5 @@ dependencies {
     compile project(':library')
 
     compile 'com.squareup.picasso:picasso:2.2.0'
-    compile 'com.alexvasilkov:fluffy-commons:1.0.9'
+    compile 'com.alexvasilkov:android-commons:1.2.3'
 }

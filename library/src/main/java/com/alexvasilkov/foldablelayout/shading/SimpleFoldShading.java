@@ -25,26 +25,26 @@ public class SimpleFoldShading implements FoldShading {
 
     @Override
     public void onPostDraw(Canvas canvas, Rect bounds, float rotation, int gravity) {
-        float intencity = getShadowIntencity(rotation, gravity);
-        if (intencity > 0) {
-            int alpha = (int) (SHADOW_MAX_ALPHA * intencity);
+        float intensity = getShadowIntensity(rotation, gravity);
+        if (intensity > 0) {
+            int alpha = (int) (SHADOW_MAX_ALPHA * intensity);
             mSolidShadow.setAlpha(alpha);
             canvas.drawRect(bounds, mSolidShadow);
         }
     }
 
-    private float getShadowIntencity(float rotation, int gravity) {
-        float intencity = 0;
+    private float getShadowIntensity(float rotation, int gravity) {
+        float intensity = 0;
         if (gravity == Gravity.TOP) {
             if (rotation > -90 && rotation < 0) { // (-90; 0) - rotation is applied
-                intencity = -rotation / 90f;
+                intensity = -rotation / 90f;
             }
         } else {
             if (rotation > 0 && rotation < 90) { // (0; 90) - rotation is applied
-                intencity = rotation / 90f;
+                intensity = rotation / 90f;
             }
         }
-        return intencity;
+        return intensity;
     }
 
 }
