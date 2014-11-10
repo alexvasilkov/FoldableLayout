@@ -1,7 +1,11 @@
 package com.alexvasilkov.foldablelayout.shading;
 
 import android.content.Context;
-import android.graphics.*;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
+import android.graphics.Rect;
 import android.view.Gravity;
 
 public class GlanceFoldShading implements FoldShading {
@@ -35,10 +39,10 @@ public class GlanceFoldShading implements FoldShading {
 
     @Override
     public void onPostDraw(Canvas canvas, Rect bounds, float rotation, int gravity) {
-        float intencity = getShadowIntencity(rotation, gravity);
+        float intensity = getShadowIntensity(rotation, gravity);
 
-        if (intencity > 0) {
-            int alpha = (int) (SHADOW_MAX_ALPHA * intencity);
+        if (intensity > 0) {
+            int alpha = (int) (SHADOW_MAX_ALPHA * intensity);
             mSolidShadow.setAlpha(alpha);
             canvas.drawRect(bounds, mSolidShadow);
         }
@@ -49,14 +53,14 @@ public class GlanceFoldShading implements FoldShading {
         }
     }
 
-    private float getShadowIntencity(float rotation, int gravity) {
-        float intencity = 0;
+    private float getShadowIntensity(float rotation, int gravity) {
+        float intensity = 0;
         if (gravity == Gravity.TOP) {
             if (rotation > -90 && rotation < 0) { // (-90; 0) - rotation is applied
-                intencity = -rotation / 90f;
+                intensity = -rotation / 90f;
             }
         }
-        return intencity;
+        return intensity;
     }
 
     private boolean computeGlance(Rect bounds, float rotation, int gravity) {
@@ -70,7 +74,9 @@ public class GlanceFoldShading implements FoldShading {
 
                 // computing "to" bounds
                 int scaledGlanceHeight = (int) (mGlance.getHeight() / aspect);
-                mGlanceTo.set(bounds.left, bounds.top + distance, bounds.right, bounds.top + distance + scaledGlanceHeight);
+                mGlanceTo.set(bounds.left, bounds.top + distance,
+                        bounds.right, bounds.top + distance + scaledGlanceHeight);
+
                 if (!mGlanceTo.intersect(bounds)) {
                     // glance is not visible
                     return false;
@@ -78,7 +84,9 @@ public class GlanceFoldShading implements FoldShading {
 
                 // computing "from" bounds
                 int scaledBoundsHeight = (int) (bounds.height() * aspect);
-                mGlanceFrom.set(0, -distanceOnGlance, mGlance.getWidth(), -distanceOnGlance + scaledBoundsHeight);
+                mGlanceFrom.set(0, -distanceOnGlance, mGlance.getWidth(),
+                        -distanceOnGlance + scaledBoundsHeight);
+
                 if (!mGlanceFrom.intersect(0, 0, mGlance.getWidth(), mGlance.getHeight())) {
                     // glance is not visible, should not happen due to previouse check
                     return false;

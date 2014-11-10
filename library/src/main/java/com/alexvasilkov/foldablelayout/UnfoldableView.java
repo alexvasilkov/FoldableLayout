@@ -10,7 +10,8 @@ import android.widget.BaseAdapter;
 import android.widget.FrameLayout;
 
 /**
- * View that provides ability to switch between 2 diffrent views (cover view & details view) with fold animation.
+ * View that provides ability to switch between 2 diffrent views (cover view & details view)
+ * with fold animation.
  * <p/>
  * It is implemented as subclass of FoldableListLayout with only 2 views to scroll between.
  */
@@ -28,7 +29,8 @@ public class UnfoldableView extends FoldableListLayout {
     private View mScheduledCoverView, mScheduledDetailsView;
 
     private ViewGroup.LayoutParams mDetailsViewParams, mCoverViewParams;
-    private int mDetailsViewParamWidth, mDetailsViewParamHeight, mCoverViewParamWidth, mCoverViewParamHeight;
+    private int mDetailsViewParamWidth, mDetailsViewParamHeight;
+    private int mCoverViewParamWidth, mCoverViewParamHeight;
     private Rect mCoverViewPosition, mDetailsViewPosition;
 
     private Adapter mAdapter;
@@ -162,7 +164,8 @@ public class UnfoldableView extends FoldableListLayout {
     public void unfold(View coverView, View detailsView) {
         if (mCoverView == coverView && mDetailsView == detailsView) return; // already in place
 
-        if ((mCoverView != null && mCoverView != coverView) || (mDetailsView != null && mDetailsView != detailsView)) {
+        if ((mCoverView != null && mCoverView != coverView)
+                || (mDetailsView != null && mDetailsView != detailsView)) {
             // cover or details view is differ - closing details and schedule reopening
             mScheduledDetailsView = detailsView;
             mScheduledCoverView = coverView;
@@ -236,12 +239,12 @@ public class UnfoldableView extends FoldableListLayout {
 
         // tracking states
 
-        float lastRotatation = mLastFoldRotation;
+        float lastRotation = mLastFoldRotation;
         mLastFoldRotation = rotation;
 
         if (mListener != null) mListener.onFoldProgress(this, stage);
 
-        if (rotation > lastRotatation && !mIsUnfolding) {
+        if (rotation > lastRotation && !mIsUnfolding) {
             mIsUnfolding = true;
             mIsFoldingBack = false;
             mIsUnfolded = false;
@@ -249,7 +252,7 @@ public class UnfoldableView extends FoldableListLayout {
             if (mListener != null) mListener.onUnfolding(this);
         }
 
-        if (rotation < lastRotatation && !mIsFoldingBack) {
+        if (rotation < lastRotation && !mIsFoldingBack) {
             mIsUnfolding = false;
             mIsFoldingBack = true;
             mIsUnfolded = false;
@@ -313,7 +316,8 @@ public class UnfoldableView extends FoldableListLayout {
     private Rect getViewGlobalPosition(View view) {
         int[] location = new int[2];
         view.getLocationOnScreen(location);
-        return new Rect(location[0], location[1], location[0] + view.getWidth(), location[1] + view.getHeight());
+        return new Rect(location[0], location[1],
+                location[0] + view.getWidth(), location[1] + view.getHeight());
     }
 
 
@@ -345,8 +349,8 @@ public class UnfoldableView extends FoldableListLayout {
 
 
     /**
-     * Cover view holder layout. It can contain at most one child which will be positioned in the top|center_horisontal
-     * location of bottom half of the view.
+     * Cover view holder layout. It can contain at most one child which will be positioned
+     * in the top|center_horizontal location of bottom half of the view.
      */
     private static class CoverHolderLayout extends FrameLayout {
 
@@ -367,8 +371,8 @@ public class UnfoldableView extends FoldableListLayout {
         protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
             super.onLayout(changed, left, top, right, bottom);
 
-            // Collecting visible bounds of child view, it will be used to correctly draw shadows and to
-            // improve drawing performance
+            // Collecting visible bounds of child view, it will be used to correctly draw shadows
+            // and to improve drawing performance
             View view = getView();
             if (view != null) {
                 mVisibleBounds.set(view.getLeft(), view.getTop(),
