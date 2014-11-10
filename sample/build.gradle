@@ -8,7 +8,7 @@ buildscript {
 }
 
 apply plugin: 'com.android.application'
-apply plugin: 'android-sign-release'
+apply plugin: 'com.alexvasilkov.sign'
 
 android {
     compileSdkVersion Integer.parseInt(ANDROID_COMPILE_SDK)
