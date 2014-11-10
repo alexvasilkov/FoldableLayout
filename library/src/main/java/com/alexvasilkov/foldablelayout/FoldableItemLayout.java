@@ -168,6 +168,18 @@ public class FoldableItemLayout extends FrameLayout {
         mBottomPart.setFoldShading(shading);
     }
 
+    @Override
+    protected void onDetachedFromWindow() {
+        super.onDetachedFromWindow();
+
+        // Helping GC to faster clean up bitmap memory.
+        // See issue #10: https://github.com/alexvasilkov/FoldableLayout/issues/10.
+        // Big thank to Michał Ćwiek https://github.com/jitsuCM.
+        if (mCacheBitmap != null) {
+            mCacheBitmap.recycle();
+            applyCacheBitmap(mCacheBitmap = null);
+        }
+    }
 
     /**
      * View holder layout that can draw itself into given canvas
