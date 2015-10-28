@@ -42,7 +42,7 @@ public class UnfoldableDetailsActivity extends BaseActivity {
         mUnfoldableView = Views.find(this, R.id.unfoldable_view);
 
         Bitmap glance = BitmapFactory.decodeResource(getResources(), R.drawable.unfold_glance);
-        mUnfoldableView.setFoldShading(new GlanceFoldShading(this, glance));
+        mUnfoldableView.setFoldShading(new GlanceFoldShading(glance));
 
         mUnfoldableView.setOnFoldingListener(new UnfoldableView.SimpleFoldingListener() {
             @Override
