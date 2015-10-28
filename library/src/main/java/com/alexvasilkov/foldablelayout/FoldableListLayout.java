@@ -33,7 +33,7 @@ public class FoldableListLayout extends FrameLayout implements GestureDetector.O
     private static final float DEFAULT_SCROLL_FACTOR = 1.33f;
 
     private static final LayoutParams PARAMS = new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
-    private static final int CACHED_LAYOUTS_OFFSET = 2;
+    private static final int MAX_CHILDREN_COUNT = 2;
 
     private OnFoldRotationListener mFoldRotationListener;
     private BaseAdapter mAdapter;
@@ -41,7 +41,7 @@ public class FoldableListLayout extends FrameLayout implements GestureDetector.O
     private float mFoldRotation;
     private float mMinRotation, mMaxRotation;
 
-    private FoldableItemLayout mFirstLayout, mSecondLayout;
+    private FoldableItemLayout mBackLayout, mFrontLayout;
     private FoldShading mFoldShading;
 
     private SparseArray<FoldableItemLayout> mFoldableItemsMap = new SparseArray<FoldableItemLayout>();
@@ -86,19 +86,30 @@ public class FoldableListLayout extends FrameLayout implements GestureDetector.O
         mFlingAnimation = new FlingAnimation();
 
         mFoldShading = new SimpleFoldShading();
+
+        setChildrenDrawingOrderEnabled(true);
     }
 
     @Override
     protected void dispatchDraw(Canvas canvas) {
         // We want manually draw only selected children
-        if (mFirstLayout != null) mFirstLayout.draw(canvas);
-        if (mSecondLayout != null) mSecondLayout.draw(canvas);
+        if (mBackLayout != null) mBackLayout.draw(canvas);
+        if (mFrontLayout != null) mFrontLayout.draw(canvas);
     }
 
     @Override
     public boolean dispatchTouchEvent(MotionEvent ev) {
         super.dispatchTouchEvent(ev);
         return getCount() > 0; // No touches for underlying views if we have items
+    }
+
+    @Override
+    protected int getChildDrawingOrder(int childCount, int i) {
+        if (mFrontLayout == null) return i; // Default order
+
+        // We need to return front view as last item for correct touches handling
+        int front = indexOfChild(mFrontLayout);
+        return i == childCount - 1 ? front : (i >= front ? i + 1 : i);
     }
 
     @Override
@@ -201,11 +212,11 @@ public class FoldableListLayout extends FrameLayout implements GestureDetector.O
         boolean isReversedOrder = localRotation <= 90;
 
         if (isReversedOrder) {
-            mFirstLayout = secondLayout;
-            mSecondLayout = firstLayout;
+            mBackLayout = secondLayout;
+            mFrontLayout = firstLayout;
         } else {
-            mFirstLayout = firstLayout;
-            mSecondLayout = secondLayout;
+            mBackLayout = firstLayout;
+            mFrontLayout = secondLayout;
         }
 
         if (mFoldRotationListener != null)
@@ -241,7 +252,7 @@ public class FoldableListLayout extends FrameLayout implements GestureDetector.O
                 }
             }
 
-            if (Math.abs(farthestItem - position) > CACHED_LAYOUTS_OFFSET) {
+            if (Math.abs(farthestItem - position) >= MAX_CHILDREN_COUNT) {
                 layout = mFoldableItemsMap.get(farthestItem);
                 mFoldableItemsMap.remove(farthestItem);
                 layout.getBaseLayout().removeAllViews(); // clearing old data

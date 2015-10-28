@@ -6,10 +6,12 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.alexvasilkov.android.commons.adapters.ItemsAdapter;
 import com.alexvasilkov.android.commons.utils.Views;
 import com.alexvasilkov.foldablelayout.sample.R;
+import com.alexvasilkov.foldablelayout.sample.activities.FoldableListActivity;
 import com.alexvasilkov.foldablelayout.sample.activities.UnfoldableDetailsActivity;
 import com.squareup.picasso.Picasso;
 
@@ -48,6 +50,9 @@ public class PaintingsAdapter extends ItemsAdapter<Painting> implements View.OnC
         if (view.getContext() instanceof UnfoldableDetailsActivity) {
             UnfoldableDetailsActivity activity = (UnfoldableDetailsActivity) view.getContext();
             activity.openDetails(view, (Painting) view.getTag());
+        } else if (view.getContext() instanceof FoldableListActivity) {
+            Painting item = (Painting) view.getTag();
+            Toast.makeText(view.getContext(), item.getTitle(), Toast.LENGTH_SHORT).show();
         }
     }
 
