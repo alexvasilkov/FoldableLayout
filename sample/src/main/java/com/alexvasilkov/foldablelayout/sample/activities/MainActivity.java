@@ -1,6 +1,5 @@
 package com.alexvasilkov.foldablelayout.sample.activities;
 
-import android.app.ListActivity;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -11,33 +10,41 @@ import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.BaseAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
 
 import com.alexvasilkov.android.commons.adapters.ItemsAdapter;
+import com.alexvasilkov.android.commons.utils.Views;
+import com.alexvasilkov.foldablelayout.sample.R;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class MainActivity extends ListActivity {
+public class MainActivity extends BaseActivity implements ListView.OnItemClickListener {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setListAdapter(getSampleAdapter());
+
+        setContentView(R.layout.activity_main);
+
+        ListView listView = Views.find(this, R.id.main_list);
+        listView.setAdapter(getSampleAdapter());
+        listView.setOnItemClickListener(this);
     }
 
     @Override
-    protected void onListItemClick(ListView l, View v, int position, long id) {
-        ActivityInfo info = (ActivityInfo) l.getItemAtPosition(position);
+    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+        ActivityInfo info = (ActivityInfo) parent.getItemAtPosition(position);
         Intent intent = new Intent();
         intent.setComponent(new ComponentName(this, info.name));
         startActivity(intent);
     }
 
     private BaseAdapter getSampleAdapter() {
-        List<ActivityInfo> items = new ArrayList<ActivityInfo>();
+        List<ActivityInfo> items = new ArrayList<>();
 
         try {
             ActivityInfo[] activitiesInfo = getPackageManager().getPackageInfo(getPackageName(),

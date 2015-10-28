@@ -2,6 +2,7 @@ package com.alexvasilkov.foldablelayout.sample.items;
 
 import android.content.res.Resources;
 import android.content.res.TypedArray;
+
 import com.alexvasilkov.foldablelayout.sample.R;
 
 public class Painting {
@@ -46,6 +47,8 @@ public class Painting {
         for (int i = 0; i < size; i++) {
             paintings[i] = new Painting(images.getResourceId(i, -1), titles[i], years[i], locations[i]);
         }
+
+        images.recycle();
 
         return paintings;
     }

@@ -13,7 +13,7 @@ import com.alexvasilkov.android.commons.utils.Views;
 import com.alexvasilkov.foldablelayout.sample.R;
 import com.alexvasilkov.foldablelayout.sample.activities.FoldableListActivity;
 import com.alexvasilkov.foldablelayout.sample.activities.UnfoldableDetailsActivity;
-import com.squareup.picasso.Picasso;
+import com.bumptech.glide.Glide;
 
 import java.util.Arrays;
 
@@ -40,18 +40,21 @@ public class PaintingsAdapter extends ItemsAdapter<Painting> implements View.OnC
     protected void bindView(Painting item, int pos, View convertView) {
         ViewHolder vh = (ViewHolder) convertView.getTag();
 
-        vh.image.setTag(item);
-        Picasso.with(convertView.getContext()).load(item.getImageId()).noFade().into(vh.image);
+        vh.image.setTag(R.id.list_item_image, item);
+        Glide.with(convertView.getContext())
+                .load(item.getImageId())
+                .dontTransform()
+                .dontAnimate()
+                .into(vh.image);
         vh.title.setText(item.getTitle());
     }
 
     @Override
     public void onClick(View view) {
+        Painting item = (Painting) view.getTag(R.id.list_item_image);
         if (view.getContext() instanceof UnfoldableDetailsActivity) {
-            UnfoldableDetailsActivity activity = (UnfoldableDetailsActivity) view.getContext();
-            activity.openDetails(view, (Painting) view.getTag());
+            ((UnfoldableDetailsActivity) view.getContext()).openDetails(view, item);
         } else if (view.getContext() instanceof FoldableListActivity) {
-            Painting item = (Painting) view.getTag();
             Toast.makeText(view.getContext(), item.getTitle(), Toast.LENGTH_SHORT).show();
         }
     }

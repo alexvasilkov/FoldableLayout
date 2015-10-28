@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="200dp"
     android:background="#fff"
@@ -9,13 +10,15 @@
         android:id="@+id/list_item_image"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:scaleType="centerCrop" />
+        android:background="#dde"
+        android:scaleType="centerCrop"
+        tools:ignore="ContentDescription" />
 
     <View
         android:layout_width="match_parent"
         android:layout_height="40sp"
-        android:background="@drawable/image_text_shadow"
-        android:layout_gravity="bottom" />
+        android:layout_gravity="bottom"
+        android:background="@drawable/image_text_shadow" />
 
     <TextView
         android:id="@+id/list_item_title"

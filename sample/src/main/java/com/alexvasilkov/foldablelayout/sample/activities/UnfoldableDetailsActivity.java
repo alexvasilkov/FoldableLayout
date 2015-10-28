@@ -16,11 +16,10 @@ import com.alexvasilkov.foldablelayout.sample.R;
 import com.alexvasilkov.foldablelayout.sample.items.Painting;
 import com.alexvasilkov.foldablelayout.sample.items.PaintingsAdapter;
 import com.alexvasilkov.foldablelayout.shading.GlanceFoldShading;
-import com.squareup.picasso.Picasso;
+import com.bumptech.glide.Glide;
 
 public class UnfoldableDetailsActivity extends BaseActivity {
 
-    private ListView mListView;
     private View mListTouchInterceptor;
     private View mDetailsLayout;
     private UnfoldableView mUnfoldableView;
@@ -29,9 +28,10 @@ public class UnfoldableDetailsActivity extends BaseActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_unfoldable_details);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
-        mListView = Views.find(this, R.id.list_view);
-        mListView.setAdapter(new PaintingsAdapter(this));
+        ListView listView = Views.find(this, R.id.list_view);
+        listView.setAdapter(new PaintingsAdapter(this));
 
         mListTouchInterceptor = Views.find(this, R.id.touch_interceptor_view);
         mListTouchInterceptor.setClickable(false);
@@ -83,7 +83,11 @@ public class UnfoldableDetailsActivity extends BaseActivity {
         TextView title = Views.find(mDetailsLayout, R.id.details_title);
         TextView description = Views.find(mDetailsLayout, R.id.details_text);
 
-        Picasso.with(this).load(painting.getImageId()).into(image);
+        Glide.with(this)
+                .load(painting.getImageId())
+                .dontTransform()
+                .dontAnimate()
+                .into(image);
         title.setText(painting.getTitle());
 
         SpannableBuilder builder = new SpannableBuilder(this);

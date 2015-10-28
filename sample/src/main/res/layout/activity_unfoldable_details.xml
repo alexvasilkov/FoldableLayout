@@ -1,4 +1,5 @@
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
@@ -7,14 +8,14 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:cacheColorHint="@android:color/transparent"
+        android:clipToPadding="false"
         android:divider="@android:color/transparent"
         android:dividerHeight="12dp"
-        android:padding="12dp"
-        android:listSelector="@android:color/transparent"
-        android:scrollingCache="false"
-        android:clipToPadding="false"
         android:fadeScrollbars="true"
-        android:scrollbarStyle="outsideOverlay" />
+        android:listSelector="@android:color/transparent"
+        android:padding="12dp"
+        android:scrollbarStyle="outsideOverlay"
+        android:scrollingCache="false" />
 
     <View
         android:id="@+id/touch_interceptor_view"
@@ -33,7 +34,8 @@
             android:layout_width="match_parent"
             android:layout_height="320dp"
             android:adjustViewBounds="true"
-            android:scaleType="centerCrop" />
+            android:scaleType="centerCrop"
+            tools:ignore="ContentDescription" />
 
         <View
             android:layout_width="match_parent"
@@ -44,12 +46,12 @@
             android:id="@+id/details_title"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:textSize="18sp"
-            android:textColor="#fff"
+            android:layout_marginBottom="4dp"
             android:layout_marginLeft="@dimen/default_margin"
             android:layout_marginRight="@dimen/default_margin"
             android:layout_marginTop="12dp"
-            android:layout_marginBottom="4dp" />
+            android:textColor="#fff"
+            android:textSize="18sp" />
 
         <View
             android:layout_width="match_parent"
@@ -62,17 +64,19 @@
             android:id="@+id/details_text"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginBottom="@dimen/default_margin"
             android:layout_marginLeft="@dimen/default_margin"
             android:layout_marginRight="@dimen/default_margin"
             android:layout_marginTop="8dp"
-            android:layout_marginBottom="@dimen/default_margin"
-            android:textSize="14sp"
+            android:lineSpacingExtra="4sp"
             android:textColor="#eee"
-            android:lineSpacingExtra="4sp" />
+            android:textSize="14sp" />
+
     </LinearLayout>
 
     <com.alexvasilkov.foldablelayout.UnfoldableView
         android:id="@+id/unfoldable_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
+
 </FrameLayout>

@@ -1,16 +1,11 @@
 package com.alexvasilkov.foldablelayout.sample.activities;
 
-import android.app.Activity;
-import android.os.Bundle;
+import android.support.annotation.NonNull;
+import android.support.v7.app.ActionBar;
+import android.support.v7.app.AppCompatActivity;
 import android.view.MenuItem;
 
-public class BaseActivity extends Activity {
-
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        if (getActionBar() != null) getActionBar().setDisplayHomeAsUpEnabled(true);
-    }
+public class BaseActivity extends AppCompatActivity {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
@@ -22,4 +17,14 @@ public class BaseActivity extends Activity {
                 return super.onOptionsItemSelected(item);
         }
     }
+
+    @NonNull
+    @Override
+    public ActionBar getSupportActionBar() {
+        // Making getSupportActionBar() method to be @NonNull
+        ActionBar actionBar = super.getSupportActionBar();
+        if (actionBar == null) throw new NullPointerException("Action bar was not initialized");
+        return actionBar;
+    }
+
 }
