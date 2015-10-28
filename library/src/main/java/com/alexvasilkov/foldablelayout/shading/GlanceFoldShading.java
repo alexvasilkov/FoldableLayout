@@ -20,7 +20,7 @@ public class GlanceFoldShading implements FoldShading {
     private final Rect mGlanceFrom;
     private final Rect mGlanceTo;
 
-    public GlanceFoldShading(Context context, Bitmap glance) {
+    public GlanceFoldShading(Bitmap glance) {
         mSolidShadow = new Paint();
         mSolidShadow.setColor(SHADOW_COLOR);
 
@@ -30,6 +30,12 @@ public class GlanceFoldShading implements FoldShading {
         mGlancePaint.setFilterBitmap(true);
         mGlanceFrom = new Rect();
         mGlanceTo = new Rect();
+    }
+
+    @SuppressWarnings("UnusedParameters")
+    @Deprecated
+    public GlanceFoldShading(Context context, Bitmap glance) {
+        this(glance);
     }
 
     @Override
@@ -87,12 +93,7 @@ public class GlanceFoldShading implements FoldShading {
                 mGlanceFrom.set(0, -distanceOnGlance, mGlance.getWidth(),
                         -distanceOnGlance + scaledBoundsHeight);
 
-                if (!mGlanceFrom.intersect(0, 0, mGlance.getWidth(), mGlance.getHeight())) {
-                    // glance is not visible, should not happen due to previouse check
-                    return false;
-                }
-
-                return true;
+                return mGlanceFrom.intersect(0, 0, mGlance.getWidth(), mGlance.getHeight());
             }
         }
 

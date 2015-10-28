@@ -44,8 +44,8 @@ public class FoldableListLayout extends FrameLayout implements GestureDetector.O
     private FoldableItemLayout mBackLayout, mFrontLayout;
     private FoldShading mFoldShading;
 
-    private SparseArray<FoldableItemLayout> mFoldableItemsMap = new SparseArray<FoldableItemLayout>();
-    private Queue<FoldableItemLayout> mFoldableItemsCache = new LinkedList<FoldableItemLayout>();
+    private SparseArray<FoldableItemLayout> mFoldableItemsMap = new SparseArray<>();
+    private Queue<FoldableItemLayout> mFoldableItemsCache = new LinkedList<>();
 
     private boolean mIsGesturesEnabled = true;
     private ObjectAnimator mAnimator;

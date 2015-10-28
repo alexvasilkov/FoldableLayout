@@ -1,5 +1,6 @@
 package com.alexvasilkov.foldablelayout;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
@@ -184,6 +185,7 @@ public class FoldableItemLayout extends FrameLayout {
     /**
      * View holder layout that can draw itself into given canvas
      */
+    @SuppressLint("ViewConstructor")
     private static class BaseLayout extends FrameLayout {
 
         private Canvas mCacheCanvas;
@@ -241,6 +243,7 @@ public class FoldableItemLayout extends FrameLayout {
      * Splat part view. It will draw top or bottom part of cached bitmap and overlay shadows.
      * Also it contains main logic for all transformations (fold rotation, scale, "rolling distance").
      */
+    @SuppressLint("ViewConstructor")
     private static class PartView extends View {
 
         private final int mGravity;
@@ -373,6 +376,7 @@ public class FoldableItemLayout extends FrameLayout {
             super.setVisibility(mExternalVisibility == VISIBLE ? mInternalVisibility : mExternalVisibility);
         }
 
+        @SuppressLint("MissingSuperCall")
         @Override
         public void draw(Canvas canvas) {
             if (mShading != null)
