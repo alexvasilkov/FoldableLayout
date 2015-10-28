@@ -11,13 +11,16 @@ import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewConfiguration;
+import android.widget.Adapter;
 import android.widget.BaseAdapter;
 import android.widget.FrameLayout;
 
 import com.alexvasilkov.foldablelayout.shading.FoldShading;
 import com.alexvasilkov.foldablelayout.shading.SimpleFoldShading;
 
+import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.Map;
 import java.util.Queue;
 
 /**
@@ -33,7 +36,7 @@ public class FoldableListLayout extends FrameLayout implements GestureDetector.O
     private static final float DEFAULT_SCROLL_FACTOR = 1.33f;
 
     private static final LayoutParams PARAMS = new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
-    private static final int MAX_CHILDREN_COUNT = 2;
+    private static final int MAX_CHILDREN_COUNT = 3;
 
     private OnFoldRotationListener mFoldRotationListener;
     private BaseAdapter mAdapter;
@@ -44,8 +47,11 @@ public class FoldableListLayout extends FrameLayout implements GestureDetector.O
     private FoldableItemLayout mBackLayout, mFrontLayout;
     private FoldShading mFoldShading;
 
-    private SparseArray<FoldableItemLayout> mFoldableItemsMap = new SparseArray<>();
-    private Queue<FoldableItemLayout> mFoldableItemsCache = new LinkedList<>();
+    private final SparseArray<FoldableItemLayout> mFoldableItemsMap = new SparseArray<>();
+    private final Queue<FoldableItemLayout> mFoldableItemsCache = new LinkedList<>();
+
+    private final SparseArray<Queue<View>> mRecycledViews = new SparseArray<>();
+    private final Map<View, Integer> mViewsTypesMap = new HashMap<>();
 
     private boolean mIsGesturesEnabled = true;
     private ObjectAnimator mAnimator;
@@ -170,6 +176,8 @@ public class FoldableListLayout extends FrameLayout implements GestureDetector.O
         mMaxRotation = size == 0 ? 0 : 180 * (size - 1);
 
         freeAllLayouts(); // clearing old bindings
+        mRecycledViews.clear();
+        mViewsTypesMap.clear();
 
         // recalculating items
         setFoldRotation(mFoldRotation);
@@ -222,7 +230,9 @@ public class FoldableListLayout extends FrameLayout implements GestureDetector.O
         if (mFoldRotationListener != null)
             mFoldRotationListener.onFoldRotation(rotation, isFromUser);
 
-        invalidate(); // when hardware acceleration is enabled view may not be invalidated and redrawn, but we need it
+        // When hardware acceleration is enabled view may not be invalidated and redrawn,
+        // but we need it to properly draw animation
+        invalidate();
     }
 
     protected void onFoldRotationChanged(FoldableItemLayout layout, int position) {
@@ -237,26 +247,26 @@ public class FoldableListLayout extends FrameLayout implements GestureDetector.O
         FoldableItemLayout layout = mFoldableItemsMap.get(position);
         if (layout != null) return layout; // we already have bound layout
 
-        // trying to find cached layout
-        layout = mFoldableItemsCache.poll();
+        // trying to free used layout (far enough from currently requested)
+        int farthestItem = position;
+
+        int size = mFoldableItemsMap.size();
+        for (int i = 0; i < size; i++) {
+            int pos = mFoldableItemsMap.keyAt(i);
+            if (Math.abs(position - pos) > Math.abs(position - farthestItem)) {
+                farthestItem = pos;
+            }
+        }
+
+        if (Math.abs(farthestItem - position) >= MAX_CHILDREN_COUNT) {
+            layout = mFoldableItemsMap.get(farthestItem);
+            mFoldableItemsMap.remove(farthestItem);
+            recycleAdapterView(layout);
+        }
 
         if (layout == null) {
-            // trying to free used layout (far enough from currently requested)
-            int farthestItem = position;
-
-            int size = mFoldableItemsMap.size();
-            for (int i = 0; i < size; i++) {
-                int pos = mFoldableItemsMap.keyAt(i);
-                if (Math.abs(position - pos) > Math.abs(position - farthestItem)) {
-                    farthestItem = pos;
-                }
-            }
-
-            if (Math.abs(farthestItem - position) >= MAX_CHILDREN_COUNT) {
-                layout = mFoldableItemsMap.get(farthestItem);
-                mFoldableItemsMap.remove(farthestItem);
-                layout.getBaseLayout().removeAllViews(); // clearing old data
-            }
+            // trying to find cached layout
+            layout = mFoldableItemsCache.poll();
         }
 
         if (layout == null) {
@@ -266,20 +276,52 @@ public class FoldableListLayout extends FrameLayout implements GestureDetector.O
             addView(layout, PARAMS);
         }
 
-        // binding layout to new data
-        View view = mAdapter.getView(position, null, layout.getBaseLayout()); // TODO: use recycler
-        layout.getBaseLayout().addView(view, PARAMS);
-
+        setupAdapterView(layout, position);
         mFoldableItemsMap.put(position, layout);
 
         return layout;
+    }
+
+    private View setupAdapterView(FoldableItemLayout layout, int position) {
+        // binding layout to new data
+        int type = mAdapter.getItemViewType(position);
+
+        View recycledView = null;
+        if (type != Adapter.IGNORE_ITEM_VIEW_TYPE) {
+            Queue<View> cache = mRecycledViews.get(type);
+            recycledView = cache == null ? null : cache.poll();
+        }
+
+        View view = mAdapter.getView(position, recycledView, layout.getBaseLayout());
+
+        if (type != Adapter.IGNORE_ITEM_VIEW_TYPE) {
+            mViewsTypesMap.put(view, type);
+        }
+
+        layout.getBaseLayout().addView(view, PARAMS);
+
+        return view;
+    }
+
+    private void recycleAdapterView(FoldableItemLayout layout) {
+        if (layout.getBaseLayout().getChildCount() == 0) return; // Nothing to recycle
+
+        View view = layout.getBaseLayout().getChildAt(0);
+        layout.getBaseLayout().removeAllViews();
+
+        Integer type = mViewsTypesMap.remove(view);
+        if (type != null) {
+            Queue<View> cache = mRecycledViews.get(type);
+            if (cache == null) mRecycledViews.put(type, cache = new LinkedList<>());
+            cache.offer(view);
+        }
     }
 
     private void freeAllLayouts() {
         int size = mFoldableItemsMap.size();
         for (int i = 0; i < size; i++) {
             FoldableItemLayout layout = mFoldableItemsMap.valueAt(i);
-            layout.getBaseLayout().removeAllViews();
+            layout.getBaseLayout().removeAllViews(); // clearing old data
             mFoldableItemsCache.offer(layout);
         }
         mFoldableItemsMap.clear();
