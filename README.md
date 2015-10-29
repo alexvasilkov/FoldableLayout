@@ -17,7 +17,7 @@ Note: **minimum Android SDK version is 14**.
 
 Add dependency to your build.gradle file:
 
-    compile 'com.alexvasilkov:foldable-layout:1.0.1'
+    compile 'com.alexvasilkov:foldable-layout:1.1.0'
 
 [Unfoldable details usage ](https://github.com/alexvasilkov/FoldableLayout/wiki/Unfoldable-details-usage)
 
