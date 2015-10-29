@@ -8,6 +8,7 @@ import android.graphics.Paint;
 import android.graphics.PorterDuff;
 import android.graphics.Rect;
 import android.view.Gravity;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
@@ -52,6 +53,12 @@ public class FoldableItemLayout extends FrameLayout {
     protected void onFinishInflate() {
         super.onFinishInflate();
         mBaseLayout.moveInflatedChildren(this, 3); // skipping mBaseLayout & mTopPart & mBottomPart views
+    }
+
+
+    @Override
+    public boolean dispatchTouchEvent(MotionEvent ev) {
+        return !mIsInTransformation && super.dispatchTouchEvent(ev);
     }
 
     @Override
