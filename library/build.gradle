@@ -10,4 +10,5 @@ android {
     }
 }
 
+// New version can be uploaded with 'gradlew clean :library:jar :library:uploadArchives'
 apply from: 'gradle-mvn-push.gradle'
