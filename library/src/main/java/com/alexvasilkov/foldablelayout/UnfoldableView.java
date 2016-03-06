@@ -237,7 +237,7 @@ public class UnfoldableView extends FoldableListLayout {
     }
 
     @Override
-    public void setFoldRotation(float rotation, boolean isFromUser) {
+    protected void setFoldRotation(float rotation, boolean isFromUser) {
         super.setFoldRotation(rotation, isFromUser);
         if (coverView == null || detailsView == null) {
             return; // nothing we can do here
@@ -445,6 +445,7 @@ public class UnfoldableView extends FoldableListLayout {
         }
 
     }
+
 
     public interface OnFoldingListener {
         void onUnfolding(UnfoldableView unfoldableView);

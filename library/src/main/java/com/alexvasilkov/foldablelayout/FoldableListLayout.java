@@ -8,6 +8,7 @@ import android.os.Handler;
 import android.util.AttributeSet;
 import android.util.SparseArray;
 import android.view.GestureDetector;
+import android.view.GestureDetector.SimpleOnGestureListener;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewConfiguration;
@@ -29,7 +30,7 @@ import java.util.Queue;
  * It wraps views created by given BaseAdapter into FoldableItemLayouts and provides functionality
  * to scroll among them.
  */
-public class FoldableListLayout extends FrameLayout implements GestureDetector.OnGestureListener {
+public class FoldableListLayout extends FrameLayout {
 
     private static final long ANIMATION_DURATION_PER_ITEM = 600L;
     private static final float MIN_FLING_VELOCITY = 600f;
@@ -103,7 +104,22 @@ public class FoldableListLayout extends FrameLayout implements GestureDetector.O
     }
 
     private void init(Context context) {
-        gestureDetector = new GestureDetector(context, this);
+        gestureDetector = new GestureDetector(context, new SimpleOnGestureListener() {
+            @Override
+            public boolean onDown(MotionEvent event) {
+                return FoldableListLayout.this.onDown();
+            }
+
+            @Override
+            public boolean onScroll(MotionEvent e1, MotionEvent e2, float distX, float distY) {
+                return FoldableListLayout.this.onScroll(e1, e2);
+            }
+
+            @Override
+            public boolean onFling(MotionEvent e1, MotionEvent e2, float velX, float velY) {
+                return FoldableListLayout.this.onFling(velY);
+            }
+        });
         gestureDetector.setIsLongpressEnabled(false);
         animator = ObjectAnimator.ofFloat(this, "foldRotation", 0f);
         minDistanceBeforeScroll = ViewConfiguration.get(context).getScaledTouchSlop();
@@ -113,6 +129,13 @@ public class FoldableListLayout extends FrameLayout implements GestureDetector.O
         foldShading = new SimpleFoldShading();
 
         setChildrenDrawingOrderEnabled(true);
+    }
+
+    /**
+     * Internal parameter. Defines scroll velocity when user scrolls list.
+     */
+    protected void setScrollFactor(float scrollFactor) {
+        this.scrollFactor = scrollFactor;
     }
 
     @Override
@@ -188,13 +211,6 @@ public class FoldableListLayout extends FrameLayout implements GestureDetector.O
         }
     }
 
-
-    /**
-     * Internal parameter. Defines scroll velocity when user scrolls list.
-     */
-    protected void setScrollFactor(float scrollFactor) {
-        this.scrollFactor = scrollFactor;
-    }
 
     public void setAdapter(BaseAdapter adapter) {
         if (this.adapter != null) {
@@ -397,6 +413,7 @@ public class FoldableListLayout extends FrameLayout implements GestureDetector.O
         scrollToPosition((int) ((current + 90f) / 180f));
     }
 
+
     private boolean processTouch(MotionEvent event) {
         // Checking if that event was already processed
         // (by onInterceptTouchEvent prior to onTouchEvent)
@@ -420,39 +437,28 @@ public class FoldableListLayout extends FrameLayout implements GestureDetector.O
             lastTouchEventResult = false;
         }
 
-        if (action == MotionEvent.ACTION_UP && !flingAnimation.isAnimating()) {
-            scrollToNearestPosition();
+        if (action == MotionEvent.ACTION_UP) {
+            onUp();
         }
 
         return lastTouchEventResult;
     }
 
-    @Override
-    public boolean onDown(MotionEvent event) {
+    private boolean onDown() {
         isScrollDetected = false;
         animator.cancel();
         flingAnimation.stop();
         return false;
     }
 
-    @Override
-    public void onShowPress(MotionEvent event) {
-        // NO-OP
+    private void onUp() {
+        if (!flingAnimation.isAnimating()) {
+            scrollToNearestPosition();
+        }
     }
 
-    @Override
-    public boolean onSingleTapUp(MotionEvent event) {
-        return false;
-    }
-
-    @Override
-    public void onLongPress(MotionEvent event) {
-        // NO-OP
-    }
-
-    @Override
-    public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
-        float distance = e1.getY() - e2.getY();
+    private boolean onScroll(MotionEvent firstEvent, MotionEvent moveEvent) {
+        float distance = firstEvent.getY() - moveEvent.getY();
 
         if (!isScrollDetected && Math.abs(distance) > minDistanceBeforeScroll && getHeight() != 0) {
             isScrollDetected = true;
@@ -468,8 +474,7 @@ public class FoldableListLayout extends FrameLayout implements GestureDetector.O
         return isScrollDetected;
     }
 
-    @Override
-    public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
+    private boolean onFling(float velocityY) {
         if (getHeight() == 0) {
             return false;
         }
