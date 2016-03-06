@@ -88,7 +88,7 @@ public class FoldableListLayout extends FrameLayout implements GestureDetector.O
         mGestureDetector = new GestureDetector(context, this);
         mGestureDetector.setIsLongpressEnabled(false);
         mAnimator = ObjectAnimator.ofFloat(this, "foldRotation", 0);
-        mMinDistanceBeforeScroll = ViewConfiguration.get(context).getScaledPagingTouchSlop();
+        mMinDistanceBeforeScroll = ViewConfiguration.get(context).getScaledTouchSlop();
 
         mFlingAnimation = new FlingAnimation();
 
