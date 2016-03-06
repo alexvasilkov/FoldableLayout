@@ -17,6 +17,7 @@ import com.alexvasilkov.foldablelayout.sample.items.Painting;
 import com.alexvasilkov.foldablelayout.sample.items.PaintingsAdapter;
 import com.alexvasilkov.foldablelayout.shading.GlanceFoldShading;
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
 
 public class UnfoldableDetailsActivity extends BaseActivity {
 
@@ -86,8 +87,8 @@ public class UnfoldableDetailsActivity extends BaseActivity {
 
         Glide.with(this)
                 .load(painting.getImageId())
-                .dontTransform()
                 .dontAnimate()
+                .diskCacheStrategy(DiskCacheStrategy.NONE)
                 .into(image);
         title.setText(painting.getTitle());
 

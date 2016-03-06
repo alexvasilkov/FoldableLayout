@@ -14,6 +14,7 @@ import com.alexvasilkov.foldablelayout.sample.R;
 import com.alexvasilkov.foldablelayout.sample.activities.FoldableListActivity;
 import com.alexvasilkov.foldablelayout.sample.activities.UnfoldableDetailsActivity;
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
 
 import java.util.Arrays;
 
@@ -43,8 +44,8 @@ public class PaintingsAdapter extends ItemsAdapter<Painting> implements View.OnC
         vh.image.setTag(R.id.list_item_image, item);
         Glide.with(convertView.getContext())
                 .load(item.getImageId())
-                .dontTransform()
                 .dontAnimate()
+                .diskCacheStrategy(DiskCacheStrategy.NONE)
                 .into(vh.image);
         vh.title.setText(item.getTitle());
     }

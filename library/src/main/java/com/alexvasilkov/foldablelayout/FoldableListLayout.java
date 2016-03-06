@@ -71,7 +71,7 @@ public class FoldableListLayout extends FrameLayout {
     private boolean isScrollDetected;
     private float scrollFactor = DEFAULT_SCROLL_FACTOR;
     private float scrollStartRotation;
-    private float scrollStartDistance;
+    private float scrollStartY;
 
     private final DataSetObserver dataObserver = new DataSetObserver() {
         @Override
@@ -458,16 +458,16 @@ public class FoldableListLayout extends FrameLayout {
     }
 
     private boolean onScroll(MotionEvent firstEvent, MotionEvent moveEvent) {
-        float distance = firstEvent.getY() - moveEvent.getY();
-
-        if (!isScrollDetected && Math.abs(distance) > minDistanceBeforeScroll && getHeight() != 0) {
+        if (!isScrollDetected && getHeight() != 0
+                && Math.abs(firstEvent.getY() - moveEvent.getY()) > minDistanceBeforeScroll) {
             isScrollDetected = true;
             scrollStartRotation = getFoldRotation();
-            scrollStartDistance = distance;
+            scrollStartY = moveEvent.getY();
         }
 
         if (isScrollDetected) {
-            float rotation = 180f * scrollFactor * (distance - scrollStartDistance) / getHeight();
+            float distance = scrollStartY - moveEvent.getY();
+            float rotation = 180f * scrollFactor * distance / getHeight();
             setFoldRotation(scrollStartRotation + rotation, true);
         }
 
