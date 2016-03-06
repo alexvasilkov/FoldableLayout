@@ -35,7 +35,8 @@ public class FoldableItemLayout extends FrameLayout {
     private boolean mIsInTransformation;
 
     private float mFoldRotation;
-    private float mScale;
+    private float mScale = 1f;
+    private float mScaleFactor = 1f;
     private float mRollingDistance;
 
     public FoldableItemLayout(Context context) {
@@ -112,13 +113,13 @@ public class FoldableItemLayout extends FrameLayout {
         setInTransformation(rotation != 0);
 
         if (mIsAutoScaleEnabled) {
-            float viewScale = 1.0f;
+            mScaleFactor = 1.0f;
             if (mWidth > 0) {
                 float dW = (float) (mHeight * Math.abs(Math.sin(Math.toRadians(rotation)))) * CAMERA_DISTANCE_MAGIC_FACTOR;
-                viewScale = mWidth / (mWidth + dW);
+                mScaleFactor = mWidth / (mWidth + dW);
             }
 
-            setScale(viewScale);
+            setScale(mScale);
         }
     }
 
@@ -128,8 +129,8 @@ public class FoldableItemLayout extends FrameLayout {
 
     public void setScale(float scale) {
         mScale = scale;
-        mTopPart.applyScale(scale);
-        mBottomPart.applyScale(scale);
+        mTopPart.applyScale(scale * mScaleFactor);
+        mBottomPart.applyScale(scale * mScaleFactor);
     }
 
     public float getScale() {
@@ -141,8 +142,8 @@ public class FoldableItemLayout extends FrameLayout {
      */
     public void setRollingDistance(float distance) {
         mRollingDistance = distance;
-        mTopPart.applyRollingDistance(distance, mScale);
-        mBottomPart.applyRollingDistance(distance, mScale);
+        mTopPart.applyRollingDistance(distance, mScale * mScaleFactor);
+        mBottomPart.applyRollingDistance(distance, mScale * mScaleFactor);
     }
 
     public float getRollingDistance() {

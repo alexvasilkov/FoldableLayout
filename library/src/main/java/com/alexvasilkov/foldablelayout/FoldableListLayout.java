@@ -46,6 +46,7 @@ public class FoldableListLayout extends FrameLayout implements GestureDetector.O
 
     private FoldableItemLayout mBackLayout, mFrontLayout;
     private FoldShading mFoldShading;
+    private boolean mIsAutoScaleEnabled;
 
     private final SparseArray<FoldableItemLayout> mFoldableItemsMap = new SparseArray<>();
     private final Queue<FoldableItemLayout> mFoldableItemsCache = new LinkedList<>();
@@ -147,6 +148,14 @@ public class FoldableListLayout extends FrameLayout implements GestureDetector.O
     public void setGesturesEnabled(boolean isGesturesEnabled) {
         mIsGesturesEnabled = isGesturesEnabled;
     }
+
+    public void setAutoScaleEnabled(boolean isAutoScaleEnabled) {
+        mIsAutoScaleEnabled = isAutoScaleEnabled;
+        for (int i = 0, size = mFoldableItemsMap.size(); i < size; i++) {
+            mFoldableItemsMap.valueAt(i).setAutoScaleEnabled(isAutoScaleEnabled);
+        }
+    }
+
 
     /**
      * Internal parameter. Defines scroll velocity when user scrolls list.
@@ -276,6 +285,7 @@ public class FoldableListLayout extends FrameLayout implements GestureDetector.O
             addView(layout, PARAMS);
         }
 
+        layout.setAutoScaleEnabled(mIsAutoScaleEnabled);
         setupAdapterView(layout, position);
         mFoldableItemsMap.put(position, layout);
 
