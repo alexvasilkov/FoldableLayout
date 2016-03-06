@@ -45,7 +45,8 @@ public class Painting {
         Painting[] paintings = new Painting[size];
 
         for (int i = 0; i < size; i++) {
-            paintings[i] = new Painting(images.getResourceId(i, -1), titles[i], years[i], locations[i]);
+            final int imageId = images.getResourceId(i, -1);
+            paintings[i] = new Painting(imageId, titles[i], years[i], locations[i]);
         }
 
         images.recycle();

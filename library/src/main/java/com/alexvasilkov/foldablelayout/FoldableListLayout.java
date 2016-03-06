@@ -26,48 +26,66 @@ import java.util.Queue;
 /**
  * Foldable items list layout.
  * <p/>
- * It wraps views created by given BaseAdapter into FoldableItemLayouts and provides functionality to scroll
- * among them.
+ * It wraps views created by given BaseAdapter into FoldableItemLayouts and provides functionality
+ * to scroll among them.
  */
 public class FoldableListLayout extends FrameLayout implements GestureDetector.OnGestureListener {
 
-    private static final long ANIMATION_DURATION_PER_ITEM = 600;
-    private static final float MIN_FLING_VELOCITY = 600;
+    private static final long ANIMATION_DURATION_PER_ITEM = 600L;
+    private static final float MIN_FLING_VELOCITY = 600f;
     private static final float DEFAULT_SCROLL_FACTOR = 1.33f;
 
-    private static final LayoutParams PARAMS = new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
+    private static final LayoutParams PARAMS =
+            new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
     private static final int MAX_CHILDREN_COUNT = 3;
 
-    private OnFoldRotationListener mFoldRotationListener;
-    private BaseAdapter mAdapter;
+    private OnFoldRotationListener foldRotationListener;
+    private BaseAdapter adapter;
 
-    private float mFoldRotation;
-    private float mMinRotation, mMaxRotation;
+    private float foldRotation;
+    private float minRotation;
+    private float maxRotation;
 
-    private FoldableItemLayout mBackLayout, mFrontLayout;
-    private FoldShading mFoldShading;
-    private boolean mIsAutoScaleEnabled;
+    private FoldableItemLayout backLayout;
+    private FoldableItemLayout frontLayout;
+    private FoldShading foldShading;
+    private boolean isAutoScaleEnabled;
 
-    private final SparseArray<FoldableItemLayout> mFoldableItemsMap = new SparseArray<>();
-    private final Queue<FoldableItemLayout> mFoldableItemsCache = new LinkedList<>();
+    private final SparseArray<FoldableItemLayout> foldableItemsMap = new SparseArray<>();
+    private final Queue<FoldableItemLayout> foldableItemsCache = new LinkedList<>();
 
-    private final SparseArray<Queue<View>> mRecycledViews = new SparseArray<>();
-    private final Map<View, Integer> mViewsTypesMap = new HashMap<>();
+    private final SparseArray<Queue<View>> recycledViews = new SparseArray<>();
+    private final Map<View, Integer> viewsTypesMap = new HashMap<>();
 
-    private boolean mIsGesturesEnabled = true;
-    private ObjectAnimator mAnimator;
-    private long mLastTouchEventTime;
-    private int mLastTouchEventAction;
-    private boolean mLastTouchEventResult;
-    private GestureDetector mGestureDetector;
+    private boolean isGesturesEnabled = true;
+    private ObjectAnimator animator;
+    private long lastTouchEventTime;
+    private int lastTouchEventAction;
+    private boolean lastTouchEventResult;
+    private GestureDetector gestureDetector;
 
-    private FlingAnimation mFlingAnimation;
+    private FlingAnimation flingAnimation;
 
-    private float mMinDistanceBeforeScroll;
-    private boolean mIsScrollDetected;
-    private float mScrollFactor = DEFAULT_SCROLL_FACTOR;
-    private float mScrollStartRotation;
-    private float mScrollStartDistance;
+    private float minDistanceBeforeScroll;
+    private boolean isScrollDetected;
+    private float scrollFactor = DEFAULT_SCROLL_FACTOR;
+    private float scrollStartRotation;
+    private float scrollStartDistance;
+
+    private final DataSetObserver dataObserver = new DataSetObserver() {
+        @Override
+        public void onChanged() {
+            super.onChanged();
+            updateAdapterData();
+        }
+
+        @Override
+        public void onInvalidated() {
+            super.onInvalidated();
+            updateAdapterData();
+        }
+    };
+
 
     public FoldableListLayout(Context context) {
         super(context);
@@ -85,14 +103,14 @@ public class FoldableListLayout extends FrameLayout implements GestureDetector.O
     }
 
     private void init(Context context) {
-        mGestureDetector = new GestureDetector(context, this);
-        mGestureDetector.setIsLongpressEnabled(false);
-        mAnimator = ObjectAnimator.ofFloat(this, "foldRotation", 0);
-        mMinDistanceBeforeScroll = ViewConfiguration.get(context).getScaledTouchSlop();
+        gestureDetector = new GestureDetector(context, this);
+        gestureDetector.setIsLongpressEnabled(false);
+        animator = ObjectAnimator.ofFloat(this, "foldRotation", 0f);
+        minDistanceBeforeScroll = ViewConfiguration.get(context).getScaledTouchSlop();
 
-        mFlingAnimation = new FlingAnimation();
+        flingAnimation = new FlingAnimation();
 
-        mFoldShading = new SimpleFoldShading();
+        foldShading = new SimpleFoldShading();
 
         setChildrenDrawingOrderEnabled(true);
     }
@@ -100,8 +118,12 @@ public class FoldableListLayout extends FrameLayout implements GestureDetector.O
     @Override
     protected void dispatchDraw(Canvas canvas) {
         // We want manually draw only selected children
-        if (mBackLayout != null) mBackLayout.draw(canvas);
-        if (mFrontLayout != null) mFrontLayout.draw(canvas);
+        if (backLayout != null) {
+            backLayout.draw(canvas);
+        }
+        if (frontLayout != null) {
+            frontLayout.draw(canvas);
+        }
     }
 
     @Override
@@ -111,48 +133,58 @@ public class FoldableListLayout extends FrameLayout implements GestureDetector.O
     }
 
     @Override
-    protected int getChildDrawingOrder(int childCount, int i) {
-        if (mFrontLayout == null) return i; // Default order
+    protected int getChildDrawingOrder(int childCount, int index) {
+        if (frontLayout == null) {
+            return index; // Default order
+        }
 
         // We need to return front view as last item for correct touches handling
-        int front = indexOfChild(mFrontLayout);
-        return i == childCount - 1 ? front : (i >= front ? i + 1 : i);
+        int front = indexOfChild(frontLayout);
+        return index == childCount - 1 ? front : (index >= front ? index + 1 : index);
     }
 
     @Override
     public boolean onInterceptTouchEvent(MotionEvent event) {
         // Listening for events but propagates them to children if no own gestures are detected
-        return mIsGesturesEnabled && processTouch(event);
+        return isGesturesEnabled && processTouch(event);
     }
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-        // We will be here if no children wants to handle current touches or if own gesture is detected
-        return mIsGesturesEnabled && processTouch(event);
+        // We will be here if no children wants to handle current touches or if own gesture is
+        // detected
+        return isGesturesEnabled && processTouch(event);
     }
 
+    @SuppressWarnings("unused") // Public API
     public void setOnFoldRotationListener(OnFoldRotationListener listener) {
-        mFoldRotationListener = listener;
+        foldRotationListener = listener;
     }
 
     /**
-     * Setting shading to use during fold rotation. Should be called before {@link #setAdapter(android.widget.BaseAdapter)}
+     * Sets shading to use during fold rotation. Should be called before {@link
+     * #setAdapter(android.widget.BaseAdapter)}
      */
     public void setFoldShading(FoldShading shading) {
-        mFoldShading = shading;
+        foldShading = shading;
     }
 
     /**
-     * Set whether gestures are enabled or not. Useful when layout content is scrollable.
+     * Sets whether gestures are enabled or not. Useful when layout content is scrollable.
      */
+    @SuppressWarnings("unused") // Public API
     public void setGesturesEnabled(boolean isGesturesEnabled) {
-        mIsGesturesEnabled = isGesturesEnabled;
+        this.isGesturesEnabled = isGesturesEnabled;
     }
 
+    /**
+     * Sets whether view should scale down to fit moving part into screen.
+     */
+    @SuppressWarnings("unused") // Public API
     public void setAutoScaleEnabled(boolean isAutoScaleEnabled) {
-        mIsAutoScaleEnabled = isAutoScaleEnabled;
-        for (int i = 0, size = mFoldableItemsMap.size(); i < size; i++) {
-            mFoldableItemsMap.valueAt(i).setAutoScaleEnabled(isAutoScaleEnabled);
+        this.isAutoScaleEnabled = isAutoScaleEnabled;
+        for (int i = 0, size = foldableItemsMap.size(); i < size; i++) {
+            foldableItemsMap.valueAt(i).setAutoScaleEnabled(isAutoScaleEnabled);
         }
     }
 
@@ -161,35 +193,44 @@ public class FoldableListLayout extends FrameLayout implements GestureDetector.O
      * Internal parameter. Defines scroll velocity when user scrolls list.
      */
     protected void setScrollFactor(float scrollFactor) {
-        mScrollFactor = scrollFactor;
+        this.scrollFactor = scrollFactor;
     }
 
     public void setAdapter(BaseAdapter adapter) {
-        if (mAdapter != null) mAdapter.unregisterDataSetObserver(mDataObserver);
-        mAdapter = adapter;
-        if (mAdapter != null) mAdapter.registerDataSetObserver(mDataObserver);
+        if (this.adapter != null) {
+            this.adapter.unregisterDataSetObserver(dataObserver);
+        }
+        this.adapter = adapter;
+        if (this.adapter != null) {
+            this.adapter.registerDataSetObserver(dataObserver);
+        }
         updateAdapterData();
     }
 
+    @SuppressWarnings("unused") // Public API
     public BaseAdapter getAdapter() {
-        return mAdapter;
+        return adapter;
     }
 
     public int getCount() {
-        return mAdapter == null ? 0 : mAdapter.getCount();
+        return adapter == null ? 0 : adapter.getCount();
     }
 
     private void updateAdapterData() {
         int size = getCount();
-        mMinRotation = 0;
-        mMaxRotation = size == 0 ? 0 : 180 * (size - 1);
+        minRotation = 0f;
+        maxRotation = size == 0 ? 0f : 180f * (size - 1);
 
         freeAllLayouts(); // clearing old bindings
-        mRecycledViews.clear();
-        mViewsTypesMap.clear();
+        recycledViews.clear();
+        viewsTypesMap.clear();
 
         // recalculating items
-        setFoldRotation(mFoldRotation);
+        setFoldRotation(foldRotation);
+    }
+
+    public float getFoldRotation() {
+        return foldRotation;
     }
 
     public final void setFoldRotation(float rotation) {
@@ -198,46 +239,46 @@ public class FoldableListLayout extends FrameLayout implements GestureDetector.O
 
     protected void setFoldRotation(float rotation, boolean isFromUser) {
         if (isFromUser) {
-            mAnimator.cancel();
-            mFlingAnimation.stop();
+            animator.cancel();
+            flingAnimation.stop();
         }
 
-        rotation = Math.min(Math.max(mMinRotation, rotation), mMaxRotation);
+        rotation = Math.min(Math.max(minRotation, rotation), maxRotation);
 
-        mFoldRotation = rotation;
+        foldRotation = rotation;
 
-        int firstVisiblePosition = (int) (rotation / 180);
-        float localRotation = rotation % 180;
+        final int firstVisiblePosition = (int) (rotation / 180f);
+        final float localRotation = rotation % 180f;
+        final int totalCount = getCount();
 
-        int size = getCount();
-        boolean isHasFirst = firstVisiblePosition < size;
-        boolean isHasSecond = firstVisiblePosition + 1 < size;
+        FoldableItemLayout firstLayout = null;
+        FoldableItemLayout secondLayout = null;
 
-        FoldableItemLayout firstLayout = isHasFirst ? getLayoutForItem(firstVisiblePosition) : null;
-        FoldableItemLayout secondLayout = isHasSecond ? getLayoutForItem(firstVisiblePosition + 1) : null;
-
-        if (isHasFirst) {
+        if (firstVisiblePosition < totalCount) {
+            firstLayout = getLayoutForItem(firstVisiblePosition);
             firstLayout.setFoldRotation(localRotation);
             onFoldRotationChanged(firstLayout, firstVisiblePosition);
         }
 
-        if (isHasSecond) {
-            secondLayout.setFoldRotation(localRotation - 180);
+        if (firstVisiblePosition + 1 < totalCount) {
+            secondLayout = getLayoutForItem(firstVisiblePosition + 1);
+            secondLayout.setFoldRotation(localRotation - 180f);
             onFoldRotationChanged(secondLayout, firstVisiblePosition + 1);
         }
 
-        boolean isReversedOrder = localRotation <= 90;
+        boolean isReversedOrder = localRotation <= 90f;
 
         if (isReversedOrder) {
-            mBackLayout = secondLayout;
-            mFrontLayout = firstLayout;
+            backLayout = secondLayout;
+            frontLayout = firstLayout;
         } else {
-            mBackLayout = firstLayout;
-            mFrontLayout = secondLayout;
+            backLayout = firstLayout;
+            frontLayout = secondLayout;
         }
 
-        if (mFoldRotationListener != null)
-            mFoldRotationListener.onFoldRotation(rotation, isFromUser);
+        if (foldRotationListener != null) {
+            foldRotationListener.onFoldRotation(rotation, isFromUser);
+        }
 
         // When hardware acceleration is enabled view may not be invalidated and redrawn,
         // but we need it to properly draw animation
@@ -248,107 +289,107 @@ public class FoldableListLayout extends FrameLayout implements GestureDetector.O
         // Subclasses can apply their transformations here
     }
 
-    public float getFoldRotation() {
-        return mFoldRotation;
-    }
-
     private FoldableItemLayout getLayoutForItem(int position) {
-        FoldableItemLayout layout = mFoldableItemsMap.get(position);
-        if (layout != null) return layout; // we already have bound layout
+        FoldableItemLayout layout = foldableItemsMap.get(position);
+        if (layout != null) {
+            return layout; // we already have bound layout
+        }
 
         // trying to free used layout (far enough from currently requested)
         int farthestItem = position;
 
-        int size = mFoldableItemsMap.size();
+        int size = foldableItemsMap.size();
         for (int i = 0; i < size; i++) {
-            int pos = mFoldableItemsMap.keyAt(i);
+            int pos = foldableItemsMap.keyAt(i);
             if (Math.abs(position - pos) > Math.abs(position - farthestItem)) {
                 farthestItem = pos;
             }
         }
 
         if (Math.abs(farthestItem - position) >= MAX_CHILDREN_COUNT) {
-            layout = mFoldableItemsMap.get(farthestItem);
-            mFoldableItemsMap.remove(farthestItem);
+            layout = foldableItemsMap.get(farthestItem);
+            foldableItemsMap.remove(farthestItem);
             recycleAdapterView(layout);
         }
 
         if (layout == null) {
             // trying to find cached layout
-            layout = mFoldableItemsCache.poll();
+            layout = foldableItemsCache.poll();
         }
 
         if (layout == null) {
             // if still no suited layout - create it
             layout = new FoldableItemLayout(getContext());
-            layout.setFoldShading(mFoldShading);
+            layout.setFoldShading(foldShading);
             addView(layout, PARAMS);
         }
 
-        layout.setAutoScaleEnabled(mIsAutoScaleEnabled);
+        layout.setAutoScaleEnabled(isAutoScaleEnabled);
         setupAdapterView(layout, position);
-        mFoldableItemsMap.put(position, layout);
+        foldableItemsMap.put(position, layout);
 
         return layout;
     }
 
-    private View setupAdapterView(FoldableItemLayout layout, int position) {
+    private void setupAdapterView(FoldableItemLayout layout, int position) {
         // binding layout to new data
-        int type = mAdapter.getItemViewType(position);
+        int type = adapter.getItemViewType(position);
 
         View recycledView = null;
         if (type != Adapter.IGNORE_ITEM_VIEW_TYPE) {
-            Queue<View> cache = mRecycledViews.get(type);
+            Queue<View> cache = recycledViews.get(type);
             recycledView = cache == null ? null : cache.poll();
         }
 
-        View view = mAdapter.getView(position, recycledView, layout.getBaseLayout());
+        View view = adapter.getView(position, recycledView, layout.getBaseLayout());
 
         if (type != Adapter.IGNORE_ITEM_VIEW_TYPE) {
-            mViewsTypesMap.put(view, type);
+            viewsTypesMap.put(view, type);
         }
 
         layout.getBaseLayout().addView(view, PARAMS);
-
-        return view;
     }
 
     private void recycleAdapterView(FoldableItemLayout layout) {
-        if (layout.getBaseLayout().getChildCount() == 0) return; // Nothing to recycle
+        if (layout.getBaseLayout().getChildCount() == 0) {
+            return; // Nothing to recycle
+        }
 
         View view = layout.getBaseLayout().getChildAt(0);
         layout.getBaseLayout().removeAllViews();
 
-        Integer type = mViewsTypesMap.remove(view);
+        Integer type = viewsTypesMap.remove(view);
         if (type != null) {
-            Queue<View> cache = mRecycledViews.get(type);
-            if (cache == null) mRecycledViews.put(type, cache = new LinkedList<>());
+            Queue<View> cache = recycledViews.get(type);
+            if (cache == null) {
+                recycledViews.put(type, cache = new LinkedList<>());
+            }
             cache.offer(view);
         }
     }
 
     private void freeAllLayouts() {
-        int size = mFoldableItemsMap.size();
+        int size = foldableItemsMap.size();
         for (int i = 0; i < size; i++) {
-            FoldableItemLayout layout = mFoldableItemsMap.valueAt(i);
+            FoldableItemLayout layout = foldableItemsMap.valueAt(i);
             layout.getBaseLayout().removeAllViews(); // clearing old data
-            mFoldableItemsCache.offer(layout);
+            foldableItemsCache.offer(layout);
         }
-        mFoldableItemsMap.clear();
+        foldableItemsMap.clear();
     }
 
     public void scrollToPosition(int index) {
         index = Math.max(0, Math.min(index, getCount() - 1));
 
-        float rotation = index * 180f;
-        float current = getFoldRotation();
-        long duration = (long) Math.abs(ANIMATION_DURATION_PER_ITEM * (rotation - current) / 180f);
+        final float from = getFoldRotation();
+        final float to = index * 180f;
+        final long duration = (long) Math.abs(ANIMATION_DURATION_PER_ITEM * (to - from) / 180f);
 
-        mFlingAnimation.stop();
+        flingAnimation.stop();
 
-        mAnimator.cancel();
-        mAnimator.setFloatValues(current, rotation);
-        mAnimator.setDuration(duration).start();
+        animator.cancel();
+        animator.setFloatValues(from, to);
+        animator.setDuration(duration).start();
     }
 
     protected void scrollToNearestPosition() {
@@ -357,38 +398,40 @@ public class FoldableListLayout extends FrameLayout implements GestureDetector.O
     }
 
     private boolean processTouch(MotionEvent event) {
-        // Checking if that event was already processed (by onInterceptTouchEvent prior to onTouchEvent)
+        // Checking if that event was already processed
+        // (by onInterceptTouchEvent prior to onTouchEvent)
         long eventTime = event.getEventTime();
         int action = event.getActionMasked();
 
-        if (mLastTouchEventTime == eventTime && mLastTouchEventAction == action)
-            return mLastTouchEventResult;
+        if (lastTouchEventTime == eventTime && lastTouchEventAction == action) {
+            return lastTouchEventResult;
+        }
 
-        mLastTouchEventTime = eventTime;
-        mLastTouchEventAction = action;
+        lastTouchEventTime = eventTime;
+        lastTouchEventAction = action;
 
         if (getCount() > 0) {
             // Fixing event's Y position due to performed translation
             MotionEvent eventCopy = MotionEvent.obtain(event);
             eventCopy.offsetLocation(0, getTranslationY());
-            mLastTouchEventResult = mGestureDetector.onTouchEvent(eventCopy);
+            lastTouchEventResult = gestureDetector.onTouchEvent(eventCopy);
             eventCopy.recycle();
         } else {
-            mLastTouchEventResult = false;
+            lastTouchEventResult = false;
         }
 
-        if (action == MotionEvent.ACTION_UP) {
-            if (!mFlingAnimation.isAnimating()) scrollToNearestPosition();
+        if (action == MotionEvent.ACTION_UP && !flingAnimation.isAnimating()) {
+            scrollToNearestPosition();
         }
 
-        return mLastTouchEventResult;
+        return lastTouchEventResult;
     }
 
     @Override
     public boolean onDown(MotionEvent event) {
-        mIsScrollDetected = false;
-        mAnimator.cancel();
-        mFlingAnimation.stop();
+        isScrollDetected = false;
+        animator.cancel();
+        flingAnimation.stop();
         return false;
     }
 
@@ -410,73 +453,56 @@ public class FoldableListLayout extends FrameLayout implements GestureDetector.O
     @Override
     public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
         float distance = e1.getY() - e2.getY();
-        int h = getHeight();
 
-        if (!mIsScrollDetected && Math.abs(distance) > mMinDistanceBeforeScroll && h != 0) {
-            mIsScrollDetected = true;
-            mScrollStartRotation = getFoldRotation();
-            mScrollStartDistance = distance;
+        if (!isScrollDetected && Math.abs(distance) > minDistanceBeforeScroll && getHeight() != 0) {
+            isScrollDetected = true;
+            scrollStartRotation = getFoldRotation();
+            scrollStartDistance = distance;
         }
 
-        if (mIsScrollDetected) {
-            float rotation = 180f * mScrollFactor * (distance - mScrollStartDistance) / h;
-            setFoldRotation(mScrollStartRotation + rotation, true);
+        if (isScrollDetected) {
+            float rotation = 180f * scrollFactor * (distance - scrollStartDistance) / getHeight();
+            setFoldRotation(scrollStartRotation + rotation, true);
         }
 
-        return mIsScrollDetected;
+        return isScrollDetected;
     }
 
     @Override
     public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
-        int h = getHeight();
-        if (h == 0) return false;
+        if (getHeight() == 0) {
+            return false;
+        }
 
-        float velocity = -velocityY / h * 180f;
+        float velocity = -velocityY / getHeight() * 180f;
         velocity = Math.max(MIN_FLING_VELOCITY, Math.abs(velocity)) * Math.signum(velocity);
 
-        return mFlingAnimation.fling(velocity);
-    }
-
-    private DataSetObserver mDataObserver = new DataSetObserver() {
-        @Override
-        public void onChanged() {
-            super.onChanged();
-            updateAdapterData();
-        }
-
-        @Override
-        public void onInvalidated() {
-            super.onInvalidated();
-            updateAdapterData();
-        }
-    };
-
-    public interface OnFoldRotationListener {
-        void onFoldRotation(float rotation, boolean isFromUser);
+        return flingAnimation.fling(velocity);
     }
 
 
     private class FlingAnimation implements Runnable {
 
-        private final Handler mHandler = new Handler();
+        private final Handler handler = new Handler();
 
-        private boolean mIsAnimating;
-        private long mLastTime;
-        private float mVelocity;
-        private float mMin, mMax;
+        private boolean isAnimating;
+        private long lastTime;
+        private float velocity;
+        private float min;
+        private float max;
 
         @Override
         public void run() {
             long now = System.currentTimeMillis();
-            float delta = mVelocity / 1000f * (now - mLastTime);
-            mLastTime = now;
+            float delta = velocity / 1000f * (now - lastTime);
+            lastTime = now;
 
             float rotation = getFoldRotation();
-            rotation = Math.max(mMin, Math.min(rotation + delta, mMax));
+            rotation = Math.max(min, Math.min(rotation + delta, max));
 
             setFoldRotation(rotation);
 
-            if (rotation != mMin && rotation != mMax) {
+            if (rotation != min && rotation != max) {
                 startInternal();
             } else {
                 stop();
@@ -484,35 +510,41 @@ public class FoldableListLayout extends FrameLayout implements GestureDetector.O
         }
 
         private void startInternal() {
-            mHandler.removeCallbacks(this);
-            mHandler.postDelayed(this, 10); // small delay is required (sometimes runnable can be called immediately)
-            mIsAnimating = true;
+            handler.removeCallbacks(this);
+            handler.postDelayed(this, 10L); // small delay is required to not be called immediately
+            isAnimating = true;
         }
 
         void stop() {
-            mHandler.removeCallbacks(this);
-            mIsAnimating = false;
+            handler.removeCallbacks(this);
+            isAnimating = false;
         }
 
         boolean isAnimating() {
-            return mIsAnimating;
+            return isAnimating;
         }
 
         boolean fling(float velocity) {
             float rotation = getFoldRotation();
-            if (rotation % 180 == 0) return false;
+            if (rotation % 180f == 0f) {
+                return false;
+            }
 
             int position = (int) (rotation / 180f);
-            mLastTime = System.currentTimeMillis();
-            mVelocity = velocity;
-            mMin = position * 180f;
-            mMax = mMin + 180f;
+            lastTime = System.currentTimeMillis();
+            this.velocity = velocity;
+            min = position * 180f;
+            max = min + 180f;
 
             startInternal();
 
             return true;
         }
 
+    }
+
+    public interface OnFoldRotationListener {
+        void onFoldRotation(float rotation, boolean isFromUser);
     }
 
 }

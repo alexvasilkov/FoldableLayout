@@ -1,10 +1,12 @@
 package com.alexvasilkov.foldablelayout.sample.activities;
 
+import android.annotation.SuppressLint;
 import android.support.annotation.NonNull;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.view.MenuItem;
 
+@SuppressLint("Registered")
 public class BaseActivity extends AppCompatActivity {
 
     @Override
@@ -23,7 +25,9 @@ public class BaseActivity extends AppCompatActivity {
     public ActionBar getSupportActionBar() {
         // Making getSupportActionBar() method to be @NonNull
         ActionBar actionBar = super.getSupportActionBar();
-        if (actionBar == null) throw new NullPointerException("Action bar was not initialized");
+        if (actionBar == null) {
+            throw new NullPointerException("Action bar was not initialized");
+        }
         return actionBar;
     }
 

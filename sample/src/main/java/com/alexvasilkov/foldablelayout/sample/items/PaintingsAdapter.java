@@ -26,7 +26,7 @@ public class PaintingsAdapter extends ItemsAdapter<Painting> implements View.OnC
 
     @Override
     protected View createView(Painting item, int pos, ViewGroup parent, LayoutInflater inflater) {
-        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.list_item, parent, false);
+        View view = inflater.inflate(R.layout.list_item, parent, false);
         ViewHolder vh = new ViewHolder();
         vh.image = Views.find(view, R.id.list_item_image);
         vh.image.setOnClickListener(this);

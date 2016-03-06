@@ -19,52 +19,46 @@ import com.alexvasilkov.foldablelayout.shading.FoldShading;
  * Provides basic functionality for fold animation: splitting view into 2 parts,
  * synchronous rotation of both parts and so on.
  */
-public class FoldableItemLayout extends FrameLayout {
+class FoldableItemLayout extends FrameLayout {
 
     private static final int CAMERA_DISTANCE = 48;
     private static final float CAMERA_DISTANCE_MAGIC_FACTOR = 8f / CAMERA_DISTANCE;
 
-    private boolean mIsAutoScaleEnabled;
+    private boolean isAutoScaleEnabled;
 
-    private final BaseLayout mBaseLayout;
-    private final PartView mTopPart, mBottomPart;
+    private final BaseLayout baseLayout;
+    private final PartView topPart;
+    private final PartView bottomPart;
 
-    private int mWidth, mHeight;
-    private Bitmap mCacheBitmap;
+    private int width;
+    private int height;
+    private Bitmap cacheBitmap;
 
-    private boolean mIsInTransformation;
+    private boolean isInTransformation;
 
-    private float mFoldRotation;
-    private float mScale = 1f;
-    private float mScaleFactor = 1f;
-    private float mRollingDistance;
+    private float foldRotation;
+    private float scale = 1f;
+    private float scaleFactor = 1f;
 
-    public FoldableItemLayout(Context context) {
+    FoldableItemLayout(Context context) {
         super(context);
 
-        mBaseLayout = new BaseLayout(this);
+        baseLayout = new BaseLayout(this);
 
-        mTopPart = new PartView(this, Gravity.TOP);
-        mBottomPart = new PartView(this, Gravity.BOTTOM);
+        topPart = new PartView(this, Gravity.TOP);
+        bottomPart = new PartView(this, Gravity.BOTTOM);
 
         setInTransformation(false);
     }
 
     @Override
-    protected void onFinishInflate() {
-        super.onFinishInflate();
-        mBaseLayout.moveInflatedChildren(this, 3); // skipping mBaseLayout & mTopPart & mBottomPart views
-    }
-
-
-    @Override
     public boolean dispatchTouchEvent(MotionEvent ev) {
-        return !mIsInTransformation && super.dispatchTouchEvent(ev);
+        return !isInTransformation && super.dispatchTouchEvent(ev);
     }
 
     @Override
     protected void dispatchDraw(Canvas canvas) {
-        if (mFoldRotation != 0) {
+        if (foldRotation != 0f) {
             ensureCacheBitmap();
         }
 
@@ -72,109 +66,101 @@ public class FoldableItemLayout extends FrameLayout {
     }
 
     private void ensureCacheBitmap() {
-        mWidth = getWidth();
-        mHeight = getHeight();
+        width = getWidth();
+        height = getHeight();
 
         // Check if correct cache bitmap is already created
-        if (mCacheBitmap != null && mCacheBitmap.getWidth() == mWidth
-                && mCacheBitmap.getHeight() == mHeight) return;
-
-        if (mCacheBitmap != null) {
-            mCacheBitmap.recycle();
-            mCacheBitmap = null;
+        if (cacheBitmap != null && cacheBitmap.getWidth() == width
+                && cacheBitmap.getHeight() == height) {
+            return;
         }
 
-        if (mWidth != 0 && mHeight != 0) {
+        if (cacheBitmap != null) {
+            cacheBitmap.recycle();
+            cacheBitmap = null;
+        }
+
+        if (width != 0 && height != 0) {
             try {
-                mCacheBitmap = Bitmap.createBitmap(mWidth, mHeight, Bitmap.Config.ARGB_8888);
+                cacheBitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
             } catch (OutOfMemoryError outOfMemoryError) {
-                mCacheBitmap = null;
+                cacheBitmap = null;
             }
         }
 
-        applyCacheBitmap(mCacheBitmap);
+        applyCacheBitmap(cacheBitmap);
     }
 
     private void applyCacheBitmap(Bitmap bitmap) {
-        mBaseLayout.setCacheCanvas(bitmap == null ? null : new Canvas(bitmap));
-        mTopPart.setCacheBitmap(bitmap);
-        mBottomPart.setCacheBitmap(bitmap);
+        baseLayout.setCacheCanvas(bitmap == null ? null : new Canvas(bitmap));
+        topPart.setCacheBitmap(bitmap);
+        bottomPart.setCacheBitmap(bitmap);
     }
 
     /**
-     * Fold rotation value in degrees
+     * Fold rotation value in degrees.
      */
     public void setFoldRotation(float rotation) {
-        mFoldRotation = rotation;
+        foldRotation = rotation;
 
-        mTopPart.applyFoldRotation(rotation);
-        mBottomPart.applyFoldRotation(rotation);
+        topPart.applyFoldRotation(rotation);
+        bottomPart.applyFoldRotation(rotation);
 
-        setInTransformation(rotation != 0);
+        setInTransformation(rotation != 0f);
 
-        if (mIsAutoScaleEnabled) {
-            mScaleFactor = 1.0f;
-            if (mWidth > 0) {
-                float dW = (float) (mHeight * Math.abs(Math.sin(Math.toRadians(rotation)))) * CAMERA_DISTANCE_MAGIC_FACTOR;
-                mScaleFactor = mWidth / (mWidth + dW);
+        if (isAutoScaleEnabled) {
+            scaleFactor = 1f;
+            if (width > 0) {
+                double sin = Math.abs(Math.sin(Math.toRadians(rotation)));
+                float dw = (float) (height * sin) * CAMERA_DISTANCE_MAGIC_FACTOR;
+                scaleFactor = width / (width + dw);
             }
 
-            setScale(mScale);
+            setScale(scale);
         }
     }
 
-    public float getFoldRotation() {
-        return mFoldRotation;
-    }
-
     public void setScale(float scale) {
-        mScale = scale;
-        mTopPart.applyScale(scale * mScaleFactor);
-        mBottomPart.applyScale(scale * mScaleFactor);
-    }
-
-    public float getScale() {
-        return mScale;
+        this.scale = scale;
+        topPart.applyScale(scale * scaleFactor);
+        bottomPart.applyScale(scale * scaleFactor);
     }
 
     /**
-     * Translation preserving middle line splitting
+     * Translation preserving middle line splitting.
      */
     public void setRollingDistance(float distance) {
-        mRollingDistance = distance;
-        mTopPart.applyRollingDistance(distance, mScale * mScaleFactor);
-        mBottomPart.applyRollingDistance(distance, mScale * mScaleFactor);
-    }
-
-    public float getRollingDistance() {
-        return mRollingDistance;
+        topPart.applyRollingDistance(distance, scale * scaleFactor);
+        bottomPart.applyRollingDistance(distance, scale * scaleFactor);
     }
 
     private void setInTransformation(boolean isInTransformation) {
-        if (mIsInTransformation == isInTransformation) return;
-        mIsInTransformation = isInTransformation;
+        if (this.isInTransformation == isInTransformation) {
+            return;
+        }
+        this.isInTransformation = isInTransformation;
 
-        mBaseLayout.setDrawToCache(isInTransformation);
-        mTopPart.setVisibility(isInTransformation ? VISIBLE : INVISIBLE);
-        mBottomPart.setVisibility(isInTransformation ? VISIBLE : INVISIBLE);
+        baseLayout.setDrawToCache(isInTransformation);
+        topPart.setVisibility(isInTransformation ? VISIBLE : INVISIBLE);
+        bottomPart.setVisibility(isInTransformation ? VISIBLE : INVISIBLE);
     }
 
     public void setAutoScaleEnabled(boolean isAutoScaleEnabled) {
-        mIsAutoScaleEnabled = isAutoScaleEnabled;
+        this.isAutoScaleEnabled = isAutoScaleEnabled;
     }
 
     public FrameLayout getBaseLayout() {
-        return mBaseLayout;
+        return baseLayout;
     }
 
     public void setLayoutVisibleBounds(Rect visibleBounds) {
-        mTopPart.setVisibleBounds(visibleBounds);
-        mBottomPart.setVisibleBounds(visibleBounds);
+        topPart.setVisibleBounds(visibleBounds);
+        bottomPart.setVisibleBounds(visibleBounds);
     }
 
     public void setFoldShading(FoldShading shading) {
-        mTopPart.setFoldShading(shading);
-        mBottomPart.setFoldShading(shading);
+        topPart.setFoldShading(shading);
+        bottomPart.setFoldShading(shading);
     }
 
     @Override
@@ -183,52 +169,36 @@ public class FoldableItemLayout extends FrameLayout {
 
         // Helping GC to faster clean up bitmap memory.
         // See issue #10: https://github.com/alexvasilkov/FoldableLayout/issues/10.
-        // Big thank to Michał Ćwiek https://github.com/jitsuCM.
-        if (mCacheBitmap != null) {
-            mCacheBitmap.recycle();
-            applyCacheBitmap(mCacheBitmap = null);
+        if (cacheBitmap != null) {
+            cacheBitmap.recycle();
+            applyCacheBitmap(cacheBitmap = null);
         }
     }
 
     /**
-     * View holder layout that can draw itself into given canvas
+     * View holder layout that can draw itself into given canvas.
      */
     @SuppressLint("ViewConstructor")
     private static class BaseLayout extends FrameLayout {
 
-        private Canvas mCacheCanvas;
-        private boolean mIsDrawToCache;
+        private Canvas cacheCanvas;
+        private boolean isDrawToCache;
 
-        @SuppressWarnings("deprecation")
         private BaseLayout(FoldableItemLayout layout) {
             super(layout.getContext());
 
-            int matchParent = ViewGroup.LayoutParams.MATCH_PARENT;
+            final int matchParent = ViewGroup.LayoutParams.MATCH_PARENT;
             LayoutParams params = new LayoutParams(matchParent, matchParent);
             layout.addView(this, params);
-
-            // Moving background
-            this.setBackgroundDrawable(layout.getBackground());
-            layout.setBackgroundDrawable(null);
-
             setWillNotDraw(false);
-        }
-
-        private void moveInflatedChildren(FoldableItemLayout layout, int firstSkippedItems) {
-            while (layout.getChildCount() > firstSkippedItems) {
-                View view = layout.getChildAt(firstSkippedItems);
-                LayoutParams params = (LayoutParams) view.getLayoutParams();
-                layout.removeViewAt(firstSkippedItems);
-                addView(view, params);
-            }
         }
 
         @Override
         public void draw(Canvas canvas) {
-            if (mIsDrawToCache) {
-                if (mCacheCanvas != null) {
-                    mCacheCanvas.drawColor(0, PorterDuff.Mode.CLEAR);
-                    super.draw(mCacheCanvas);
+            if (isDrawToCache) {
+                if (cacheCanvas != null) {
+                    cacheCanvas.drawColor(0, PorterDuff.Mode.CLEAR);
+                    super.draw(cacheCanvas);
                 }
             } else {
                 super.draw(canvas);
@@ -236,84 +206,86 @@ public class FoldableItemLayout extends FrameLayout {
         }
 
         private void setCacheCanvas(Canvas cacheCanvas) {
-            mCacheCanvas = cacheCanvas;
+            this.cacheCanvas = cacheCanvas;
         }
 
         private void setDrawToCache(boolean drawToCache) {
-            if (mIsDrawToCache == drawToCache) return;
-            mIsDrawToCache = drawToCache;
-            invalidate();
+            if (isDrawToCache != drawToCache) {
+                isDrawToCache = drawToCache;
+                invalidate();
+            }
         }
 
     }
 
     /**
      * Splat part view. It will draw top or bottom part of cached bitmap and overlay shadows.
-     * Also it contains main logic for all transformations (fold rotation, scale, "rolling distance").
+     * Also it contains main logic for all transformations (fold rotation, scale, "rolling
+     * distance").
      */
     @SuppressLint("ViewConstructor")
     private static class PartView extends View {
 
-        private final int mGravity;
+        private final int gravity;
 
-        private Bitmap mBitmap;
-        private final Rect mBitmapBounds = new Rect();
+        private Bitmap bitmap;
+        private final Rect bitmapBounds = new Rect();
 
-        private float mClippingFactor = 0.5f;
+        private float clippingFactor = 0.5f;
 
-        private final Paint mBitmapPaint;
+        private final Paint bitmapPaint;
 
-        private Rect mVisibleBounds;
+        private Rect visibleBounds;
 
-        private int mInternalVisibility;
-        private int mExternalVisibility;
+        private int intVisibility;
+        private int extVisibility;
 
-        private float mLocalFoldRotation;
-        private FoldShading mShading;
+        private float localFoldRotation;
+        private FoldShading shading;
 
-        public PartView(FoldableItemLayout parent, int gravity) {
+        PartView(FoldableItemLayout parent, int gravity) {
             super(parent.getContext());
-            mGravity = gravity;
+            this.gravity = gravity;
 
             final int matchParent = LayoutParams.MATCH_PARENT;
             parent.addView(this, new LayoutParams(matchParent, matchParent));
             setCameraDistance(CAMERA_DISTANCE * getResources().getDisplayMetrics().densityDpi);
 
-            mBitmapPaint = new Paint();
-            mBitmapPaint.setDither(true);
-            mBitmapPaint.setFilterBitmap(true);
+            bitmapPaint = new Paint();
+            bitmapPaint.setDither(true);
+            bitmapPaint.setFilterBitmap(true);
 
             setWillNotDraw(false);
         }
 
-        private void setCacheBitmap(Bitmap bitmap) {
-            mBitmap = bitmap;
+        void setCacheBitmap(Bitmap bitmap) {
+            this.bitmap = bitmap;
             calculateBitmapBounds();
         }
 
-        private void setVisibleBounds(Rect visibleBounds) {
-            mVisibleBounds = visibleBounds;
+        void setVisibleBounds(Rect visibleBounds) {
+            this.visibleBounds = visibleBounds;
             calculateBitmapBounds();
         }
 
-        private void setFoldShading(FoldShading shading) {
-            mShading = shading;
+        void setFoldShading(FoldShading shading) {
+            this.shading = shading;
         }
 
         private void calculateBitmapBounds() {
-            if (mBitmap == null) {
-                mBitmapBounds.set(0, 0, 0, 0);
+            if (bitmap == null) {
+                bitmapBounds.set(0, 0, 0, 0);
             } else {
-                int h = mBitmap.getHeight();
-                int w = mBitmap.getWidth();
+                int bh = bitmap.getHeight();
+                int bw = bitmap.getWidth();
 
-                int top = mGravity == Gravity.TOP ? 0 : (int) (h * (1 - mClippingFactor) - 0.5f);
-                int bottom = mGravity == Gravity.TOP ? (int) (h * mClippingFactor + 0.5f) : h;
+                int top = gravity == Gravity.TOP ? 0 : (int) (bh * (1f - clippingFactor) - 0.5f);
+                int bottom = gravity == Gravity.TOP ? (int) (bh * clippingFactor + 0.5f) : bh;
 
-                mBitmapBounds.set(0, top, w, bottom);
-                if (mVisibleBounds != null) {
-                    if (!mBitmapBounds.intersect(mVisibleBounds)) {
-                        mBitmapBounds.set(0, 0, 0, 0); // no intersection
+                bitmapBounds.set(0, top, bw, bottom);
+                if (visibleBounds != null) {
+                    if (!bitmapBounds.intersect(visibleBounds)) {
+                        bitmapBounds.set(0, 0, 0, 0); // no intersection
                     }
                 }
             }
@@ -321,26 +293,30 @@ public class FoldableItemLayout extends FrameLayout {
             invalidate();
         }
 
-        private void applyFoldRotation(float rotation) {
+        void applyFoldRotation(float rotation) {
             float position = rotation;
-            while (position < 0) position += 360;
-            position %= 360;
-            if (position > 180) position -= 360; // now position within (-180; 180]
+            while (position < 0f) {
+                position += 360f;
+            }
+            position %= 360f;
+            if (position > 180f) {
+                position -= 360f; // now position within (-180; 180]
+            }
 
-            float rotationX = 0;
+            float rotationX = 0f;
             boolean isVisible = true;
 
-            if (mGravity == Gravity.TOP) {
-                if (position <= -90 || position == 180) { // (-180; -90] || {180} - will not show
+            if (gravity == Gravity.TOP) {
+                if (position <= -90f || position == 180f) { // (-180; -90] || {180} - will not show
                     isVisible = false;
-                } else if (position < 0) { // (-90; 0) - applying rotation
+                } else if (position < 0f) { // (-90; 0) - applying rotation
                     rotationX = position;
                 }
                 // [0; 180) - holding still
             } else {
-                if (position >= 90) { // [90; 180] - will not show
+                if (position >= 90f) { // [90; 180] - will not show
                     isVisible = false;
-                } else if (position > 0) { // (0; 90) - applying rotation
+                } else if (position > 0f) { // (0; 90) - applying rotation
                     rotationX = position;
                 }
                 // else: (-180; 0] - holding still
@@ -348,51 +324,55 @@ public class FoldableItemLayout extends FrameLayout {
 
             setRotationX(rotationX);
 
-            mInternalVisibility = isVisible ? VISIBLE : INVISIBLE;
+            intVisibility = isVisible ? VISIBLE : INVISIBLE;
             applyVisibility();
 
-            mLocalFoldRotation = position;
+            localFoldRotation = position;
 
             invalidate(); // needed to draw shadow overlay
         }
 
-        private void applyScale(float scale) {
+        void applyScale(float scale) {
             setScaleX(scale);
             setScaleY(scale);
         }
 
-        private void applyRollingDistance(float distance, float scale) {
+        void applyRollingDistance(float distance, float scale) {
             // applying translation
             setTranslationY((int) (distance * scale + 0.5f));
 
             // computing clipping for top view (bottom clipping will be 1 - topClipping)
             final int h = getHeight() / 2;
-            final float topClipping = h == 0 ? 0.5f : (h - distance) / h / 2;
+            final float topClipping = h == 0 ? 0.5f : 0.5f * (h - distance) / h;
 
-            mClippingFactor = mGravity == Gravity.TOP ? topClipping : 1f - topClipping;
+            clippingFactor = gravity == Gravity.TOP ? topClipping : 1f - topClipping;
 
             calculateBitmapBounds();
         }
 
         @Override
         public void setVisibility(int visibility) {
-            mExternalVisibility = visibility;
+            extVisibility = visibility;
             applyVisibility();
         }
 
+        @SuppressLint("WrongConstant")
         private void applyVisibility() {
-            super.setVisibility(mExternalVisibility == VISIBLE ? mInternalVisibility : mExternalVisibility);
+            super.setVisibility(extVisibility == VISIBLE ? intVisibility : extVisibility);
         }
 
         @SuppressLint("MissingSuperCall")
         @Override
         public void draw(Canvas canvas) {
-            if (mShading != null)
-                mShading.onPreDraw(canvas, mBitmapBounds, mLocalFoldRotation, mGravity);
-            if (mBitmap != null)
-                canvas.drawBitmap(mBitmap, mBitmapBounds, mBitmapBounds, mBitmapPaint);
-            if (mShading != null)
-                mShading.onPostDraw(canvas, mBitmapBounds, mLocalFoldRotation, mGravity);
+            if (shading != null) {
+                shading.onPreDraw(canvas, bitmapBounds, localFoldRotation, gravity);
+            }
+            if (bitmap != null) {
+                canvas.drawBitmap(bitmap, bitmapBounds, bitmapBounds, bitmapPaint);
+            }
+            if (shading != null) {
+                shading.onPostDraw(canvas, bitmapBounds, localFoldRotation, gravity);
+            }
         }
 
     }

@@ -47,11 +47,13 @@ public class MainActivity extends BaseActivity implements ListView.OnItemClickLi
         List<ActivityInfo> items = new ArrayList<>();
 
         try {
-            ActivityInfo[] activitiesInfo = getPackageManager().getPackageInfo(getPackageName(),
-                    PackageManager.GET_ACTIVITIES).activities;
+            ActivityInfo[] activitiesInfo = getPackageManager()
+                    .getPackageInfo(getPackageName(), PackageManager.GET_ACTIVITIES).activities;
 
             for (ActivityInfo info : activitiesInfo) {
-                if (!getClass().getName().equals(info.name)) items.add(info);
+                if (!getClass().getName().equals(info.name)) {
+                    items.add(info);
+                }
             }
         } catch (PackageManager.NameNotFoundException e) {
             e.printStackTrace();
@@ -62,13 +64,14 @@ public class MainActivity extends BaseActivity implements ListView.OnItemClickLi
 
     private static class SampleAdapter extends ItemsAdapter<ActivityInfo> {
 
-        public SampleAdapter(Context context, List<ActivityInfo> list) {
+        SampleAdapter(Context context, List<ActivityInfo> list) {
             super(context);
             setItemsList(list);
         }
 
         @Override
-        protected View createView(ActivityInfo item, int pos, ViewGroup parent, LayoutInflater inflater) {
+        protected View createView(ActivityInfo item, int pos, ViewGroup parent,
+                LayoutInflater inflater) {
             return inflater.inflate(android.R.layout.simple_list_item_1, parent, false);
         }
 

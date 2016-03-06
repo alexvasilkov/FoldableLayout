@@ -13,26 +13,29 @@ public class GlanceFoldShading implements FoldShading {
     private static final int SHADOW_COLOR = Color.BLACK;
     private static final int SHADOW_MAX_ALPHA = 192;
 
-    private final Paint mSolidShadow;
+    private final Paint solidShadow;
 
-    private final Paint mGlancePaint;
-    private final Bitmap mGlance;
-    private final Rect mGlanceFrom;
-    private final Rect mGlanceTo;
+    private final Paint glancePaint;
+    private final Bitmap glance;
+    private final Rect glanceFrom;
+    private final Rect glanceTo;
 
     public GlanceFoldShading(Bitmap glance) {
-        mSolidShadow = new Paint();
-        mSolidShadow.setColor(SHADOW_COLOR);
+        solidShadow = new Paint();
+        solidShadow.setColor(SHADOW_COLOR);
 
-        mGlance = glance;
-        mGlancePaint = new Paint();
-        mGlancePaint.setDither(true);
-        mGlancePaint.setFilterBitmap(true);
-        mGlanceFrom = new Rect();
-        mGlanceTo = new Rect();
+        this.glance = glance;
+        glancePaint = new Paint();
+        glancePaint.setDither(true);
+        glancePaint.setFilterBitmap(true);
+        glanceFrom = new Rect();
+        glanceTo = new Rect();
     }
 
-    @SuppressWarnings("UnusedParameters")
+    /**
+     * @deprecated Use {@link #GlanceFoldShading(Bitmap)} instead.
+     */
+    @SuppressWarnings({ "UnusedParameters", "unused" }) // Public API
     @Deprecated
     public GlanceFoldShading(Context context, Bitmap glance) {
         this(glance);
@@ -47,22 +50,22 @@ public class GlanceFoldShading implements FoldShading {
     public void onPostDraw(Canvas canvas, Rect bounds, float rotation, int gravity) {
         float intensity = getShadowIntensity(rotation, gravity);
 
-        if (intensity > 0) {
+        if (intensity > 0f) {
             int alpha = (int) (SHADOW_MAX_ALPHA * intensity);
-            mSolidShadow.setAlpha(alpha);
-            canvas.drawRect(bounds, mSolidShadow);
+            solidShadow.setAlpha(alpha);
+            canvas.drawRect(bounds, solidShadow);
         }
 
         boolean isDrawGlance = computeGlance(bounds, rotation, gravity);
         if (isDrawGlance) {
-            canvas.drawBitmap(mGlance, mGlanceFrom, mGlanceTo, mGlancePaint);
+            canvas.drawBitmap(glance, glanceFrom, glanceTo, glancePaint);
         }
     }
 
     private float getShadowIntensity(float rotation, int gravity) {
-        float intensity = 0;
+        float intensity = 0f;
         if (gravity == Gravity.TOP) {
-            if (rotation > -90 && rotation < 0) { // (-90; 0) - rotation is applied
+            if (rotation > -90f && rotation < 0f) { // (-90; 0) - rotation is applied
                 intensity = -rotation / 90f;
             }
         }
@@ -71,29 +74,29 @@ public class GlanceFoldShading implements FoldShading {
 
     private boolean computeGlance(Rect bounds, float rotation, int gravity) {
         if (gravity == Gravity.BOTTOM) {
-            if (rotation > 0 && rotation < 90) { // (0; 90) - rotation is applied
-                final float aspect = (float) mGlance.getWidth() / (float) bounds.width();
+            if (rotation > 0f && rotation < 90f) { // (0; 90) - rotation is applied
+                final float aspect = (float) glance.getWidth() / (float) bounds.width();
 
                 // computing glance offset
                 final int distance = (int) (bounds.height() * ((rotation - 60f) / 15f));
                 final int distanceOnGlance = (int) (distance * aspect);
 
                 // computing "to" bounds
-                int scaledGlanceHeight = (int) (mGlance.getHeight() / aspect);
-                mGlanceTo.set(bounds.left, bounds.top + distance,
+                int scaledGlanceHeight = (int) (glance.getHeight() / aspect);
+                glanceTo.set(bounds.left, bounds.top + distance,
                         bounds.right, bounds.top + distance + scaledGlanceHeight);
 
-                if (!mGlanceTo.intersect(bounds)) {
+                if (!glanceTo.intersect(bounds)) {
                     // glance is not visible
                     return false;
                 }
 
                 // computing "from" bounds
                 int scaledBoundsHeight = (int) (bounds.height() * aspect);
-                mGlanceFrom.set(0, -distanceOnGlance, mGlance.getWidth(),
+                glanceFrom.set(0, -distanceOnGlance, glance.getWidth(),
                         -distanceOnGlance + scaledBoundsHeight);
 
-                return mGlanceFrom.intersect(0, 0, mGlance.getWidth(), mGlance.getHeight());
+                return glanceFrom.intersect(0, 0, glance.getWidth(), glance.getHeight());
             }
         }
 
