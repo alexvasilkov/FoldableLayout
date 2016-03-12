@@ -19,11 +19,18 @@ public class UnfoldableView extends FoldableListLayout {
 
     private static final float DEFAULT_SCROLL_FACTOR = 2f;
 
+    private static final int STATE_FOLDED = 0;
+    private static final int STATE_UNFOLDING = 1;
+    private static final int STATE_UNFOLDED = 2;
+    private static final int STATE_FOLDING = 3;
+
+
     private View defaultDetailsPlaceHolderView;
     private View defaultCoverPlaceHolderView;
 
     private View detailsView;
     private View coverView;
+
     private View detailsPlaceHolderView;
     private View coverPlaceHolderView;
     private CoverHolderLayout coverHolderLayout;
@@ -43,9 +50,7 @@ public class UnfoldableView extends FoldableListLayout {
     private Adapter adapter;
 
     private float lastFoldRotation;
-    private boolean isUnfolding;
-    private boolean isFoldingBack;
-    private boolean isUnfolded;
+    private int state = STATE_FOLDED;
 
     private OnFoldingListener foldingListener;
 
@@ -178,26 +183,25 @@ public class UnfoldableView extends FoldableListLayout {
      */
     public void unfold(View coverView, View detailsView) {
         if (this.coverView == coverView && this.detailsView == detailsView) {
-            return; // already in place
+            scrollToPosition(1); // starting unfold animation
+            return;
         }
 
         if ((this.coverView != null && this.coverView != coverView)
                 || (this.detailsView != null && this.detailsView != detailsView)) {
             // cover or details view is differ - closing details and schedule reopening
-            scheduledDetailsView = detailsView;
             scheduledCoverView = coverView;
+            scheduledDetailsView = detailsView;
             foldBack();
             return;
         }
 
+        // initializing foldable views
         setCoverViewInternal(coverView);
         setDetailsViewInternal(detailsView);
-
-        // initializing foldable views
         setAdapter(adapter);
 
-        // starting unfold animation
-        scrollToPosition(1);
+        scrollToPosition(1); // starting unfold animation
     }
 
     public void foldBack() {
@@ -224,16 +228,46 @@ public class UnfoldableView extends FoldableListLayout {
     }
 
     public boolean isUnfolding() {
-        return isUnfolding;
+        return state == STATE_UNFOLDING;
     }
 
     @SuppressWarnings("unused") // Public API
     public boolean isFoldingBack() {
-        return isFoldingBack;
+        return state == STATE_FOLDING;
     }
 
     public boolean isUnfolded() {
-        return isUnfolded;
+        return state == STATE_UNFOLDED;
+    }
+
+    private void setState(int state) {
+        if (this.state != state) {
+            this.state = state;
+
+            if (state == STATE_FOLDED) {
+                onFoldedBack();
+            }
+
+            if (foldingListener != null) {
+                switch (state) {
+                    case STATE_UNFOLDING:
+                        foldingListener.onUnfolding(this);
+                        break;
+                    case STATE_FOLDING:
+                        foldingListener.onFoldingBack(this);
+                        break;
+                    case STATE_UNFOLDED:
+                        foldingListener.onUnfolded(this);
+                        break;
+                    case STATE_FOLDED:
+                        foldingListener.onFoldedBack(this);
+                        break;
+                    default:
+                        // nothing
+                }
+            }
+        }
+
     }
 
     @Override
@@ -259,52 +293,27 @@ public class UnfoldableView extends FoldableListLayout {
 
         // tracking states
 
-        float lastRotation = lastFoldRotation;
+        final float lastRotation = lastFoldRotation;
         lastFoldRotation = rotation;
 
         if (foldingListener != null) {
             foldingListener.onFoldProgress(this, stage);
         }
 
-        if (rotation > lastRotation && !isUnfolding) {
-            isUnfolding = true;
-            isFoldingBack = false;
-            isUnfolded = false;
-
-            if (foldingListener != null) {
-                foldingListener.onUnfolding(this);
-            }
+        if (rotation > lastRotation) {
+            setState(STATE_UNFOLDING);
         }
 
-        if (rotation < lastRotation && !isFoldingBack) {
-            isUnfolding = false;
-            isFoldingBack = true;
-            isUnfolded = false;
-
-            if (foldingListener != null) {
-                foldingListener.onFoldingBack(this);
-            }
+        if (rotation < lastRotation) {
+            setState(STATE_FOLDING);
         }
 
-        if (rotation == 180f && !isUnfolded) {
-            isUnfolding = false;
-            isFoldingBack = false;
-            isUnfolded = true;
-
-            if (foldingListener != null) {
-                foldingListener.onUnfolded(this);
-            }
+        if (rotation == 180f) {
+            setState(STATE_UNFOLDED);
         }
 
-        if (rotation == 0f && isFoldingBack) {
-            isUnfolding = false;
-            isFoldingBack = false;
-            isUnfolded = false;
-
-            onFoldedBack();
-            if (foldingListener != null) {
-                foldingListener.onFoldedBack(this);
-            }
+        if (rotation == 0f && state == STATE_FOLDING) {
+            setState(STATE_FOLDED);
         }
     }
 
@@ -331,6 +340,17 @@ public class UnfoldableView extends FoldableListLayout {
             float translationY = stage < 0.5f ? -dh * (1f - 2f * stage) : 0;
 
             layout.setRollingDistance(translationY);
+        }
+    }
+
+    @Override
+    protected void animateFold(float to) {
+        super.animateFold(to);
+
+        if (to > getFoldRotation()) {
+            setState(STATE_UNFOLDING);
+        } else {
+            setState(STATE_FOLDING);
         }
     }
 

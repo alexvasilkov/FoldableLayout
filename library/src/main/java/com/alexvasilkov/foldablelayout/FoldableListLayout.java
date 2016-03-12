@@ -174,8 +174,7 @@ public class FoldableListLayout extends FrameLayout {
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-        // We will be here if no children wants to handle current touches or if own gesture is
-        // detected
+        // We will be here if no children wants to handle touches or if own gesture detected
         return isGesturesEnabled && processTouch(event);
     }
 
@@ -185,8 +184,8 @@ public class FoldableListLayout extends FrameLayout {
     }
 
     /**
-     * Sets shading to use during fold rotation. Should be called before {@link
-     * #setAdapter(android.widget.BaseAdapter)}
+     * Sets shading to use during fold rotation. Should be called before
+     * {@link #setAdapter(android.widget.BaseAdapter)}
      */
     public void setFoldShading(FoldShading shading) {
         foldShading = shading;
@@ -233,9 +232,9 @@ public class FoldableListLayout extends FrameLayout {
     }
 
     private void updateAdapterData() {
-        int size = getCount();
+        int count = getCount();
         minRotation = 0f;
-        maxRotation = size == 0 ? 0f : 180f * (size - 1);
+        maxRotation = count == 0 ? 0f : 180f * (count - 1);
 
         freeAllLayouts(); // clearing old bindings
         recycledViews.clear();
@@ -396,21 +395,23 @@ public class FoldableListLayout extends FrameLayout {
 
     public void scrollToPosition(int index) {
         index = Math.max(0, Math.min(index, getCount() - 1));
+        animateFold(index * 180f);
+    }
 
+    protected void scrollToNearestPosition() {
+        scrollToPosition((int) ((getFoldRotation() + 90f) / 180f));
+    }
+
+    protected void animateFold(float to) {
         final float from = getFoldRotation();
-        final float to = index * 180f;
         final long duration = (long) Math.abs(ANIMATION_DURATION_PER_ITEM * (to - from) / 180f);
 
         flingAnimation.stop();
 
         animator.cancel();
         animator.setFloatValues(from, to);
-        animator.setDuration(duration).start();
-    }
-
-    protected void scrollToNearestPosition() {
-        float current = getFoldRotation();
-        scrollToPosition((int) ((current + 90f) / 180f));
+        animator.setDuration(duration);
+        animator.start();
     }
 
 
@@ -437,8 +438,8 @@ public class FoldableListLayout extends FrameLayout {
             lastTouchEventResult = false;
         }
 
-        if (action == MotionEvent.ACTION_UP) {
-            onUp();
+        if (action == MotionEvent.ACTION_UP || action == MotionEvent.ACTION_CANCEL) {
+            onUpOrCancel();
         }
 
         return lastTouchEventResult;
@@ -451,7 +452,7 @@ public class FoldableListLayout extends FrameLayout {
         return false;
     }
 
-    private void onUp() {
+    private void onUpOrCancel() {
         if (!flingAnimation.isAnimating()) {
             scrollToNearestPosition();
         }
