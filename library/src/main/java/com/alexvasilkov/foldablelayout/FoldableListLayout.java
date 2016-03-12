@@ -4,7 +4,6 @@ import android.animation.ObjectAnimator;
 import android.content.Context;
 import android.database.DataSetObserver;
 import android.graphics.Canvas;
-import android.os.Handler;
 import android.util.AttributeSet;
 import android.util.SparseArray;
 import android.view.GestureDetector;
@@ -489,8 +488,6 @@ public class FoldableListLayout extends FrameLayout {
 
     private class FlingAnimation implements Runnable {
 
-        private final Handler handler = new Handler();
-
         private boolean isAnimating;
         private long lastTime;
         private float velocity;
@@ -516,13 +513,12 @@ public class FoldableListLayout extends FrameLayout {
         }
 
         private void startInternal() {
-            handler.removeCallbacks(this);
-            handler.postDelayed(this, 10L); // small delay is required to not be called immediately
+            Utils.postOnAnimation(FoldableListLayout.this, this);
             isAnimating = true;
         }
 
         void stop() {
-            handler.removeCallbacks(this);
+            FoldableListLayout.this.removeCallbacks(this);
             isAnimating = false;
         }
 

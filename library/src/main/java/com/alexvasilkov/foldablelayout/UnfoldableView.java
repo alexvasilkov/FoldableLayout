@@ -201,6 +201,7 @@ public class UnfoldableView extends FoldableListLayout {
         setDetailsViewInternal(detailsView);
         setAdapter(adapter);
 
+        setState(STATE_UNFOLDING);
         scrollToPosition(1); // starting unfold animation
     }
 
@@ -219,12 +220,15 @@ public class UnfoldableView extends FoldableListLayout {
         setTranslationX(0f);
         setTranslationY(0f);
 
-        if (scheduledCoverView != null && scheduledDetailsView != null) {
-            View scheduledDetails = scheduledDetailsView;
-            View scheduledCover = scheduledCoverView;
-            scheduledDetailsView = scheduledCoverView = null;
-            unfold(scheduledCover, scheduledDetails);
-        }
+        Utils.postOnAnimation(this, new Runnable() {
+            @Override
+            public void run() {
+                if (scheduledCoverView != null && scheduledDetailsView != null) {
+                    unfold(scheduledCoverView, scheduledDetailsView);
+                    scheduledCoverView = scheduledDetailsView = null;
+                }
+            }
+        });
     }
 
     public boolean isUnfolding() {
@@ -347,9 +351,7 @@ public class UnfoldableView extends FoldableListLayout {
     protected void animateFold(float to) {
         super.animateFold(to);
 
-        if (to > getFoldRotation()) {
-            setState(STATE_UNFOLDING);
-        } else {
+        if (to <= getFoldRotation() && state != STATE_FOLDED) {
             setState(STATE_FOLDING);
         }
     }
