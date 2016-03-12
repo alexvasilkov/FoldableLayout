@@ -9,16 +9,18 @@ Android widgets to implement folding animation.
 
 #### Sample app ####
 
-[![Get it on Google Play](http://developer.android.com/images/brand/en_generic_rgb_wo_60.png)](http://play.google.com/store/apps/details?id=com.alexvasilkov.foldablelayout.sample)
+<a href="http://play.google.com/store/apps/details?id=com.alexvasilkov.foldablelayout.sample">
+<img alt="Get it on Google Play" src="https://play.google.com/intl/en_us/badges/images/apps/en-play-badge-border.png" height="64" />
+</a>
 
 #### Usage ####
 
 Note: **minimum Android SDK version is 14**.
 
 Add dependency to your build.gradle file:
-
-    compile 'com.alexvasilkov:foldable-layout:1.1.0'
-
+```groovy
+compile 'com.alexvasilkov:foldable-layout:1.1.0'
+```
 [Unfoldable details usage ](https://github.com/alexvasilkov/FoldableLayout/wiki/Unfoldable-details-usage)
 
 [Foldable list usage](https://github.com/alexvasilkov/FoldableLayout/wiki/Foldable-list-usage)
