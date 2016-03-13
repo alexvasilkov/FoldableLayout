@@ -43,7 +43,7 @@ public class GlanceFoldShading implements FoldShading {
 
     @Override
     public void onPreDraw(Canvas canvas, Rect bounds, float rotation, int gravity) {
-        // NO-OP
+        // No-op
     }
 
     @Override
@@ -65,7 +65,7 @@ public class GlanceFoldShading implements FoldShading {
     private float getShadowIntensity(float rotation, int gravity) {
         float intensity = 0f;
         if (gravity == Gravity.TOP) {
-            if (rotation > -90f && rotation < 0f) { // (-90; 0) - rotation is applied
+            if (rotation > -90f && rotation < 0f) { // (-90; 0) - Rotation is applied
                 intensity = -rotation / 90f;
             }
         }
@@ -74,24 +74,24 @@ public class GlanceFoldShading implements FoldShading {
 
     private boolean computeGlance(Rect bounds, float rotation, int gravity) {
         if (gravity == Gravity.BOTTOM) {
-            if (rotation > 0f && rotation < 90f) { // (0; 90) - rotation is applied
+            if (rotation > 0f && rotation < 90f) { // (0; 90) - Rotation is applied
                 final float aspect = (float) glance.getWidth() / (float) bounds.width();
 
-                // computing glance offset
+                // Computing glance offset
                 final int distance = (int) (bounds.height() * ((rotation - 60f) / 15f));
                 final int distanceOnGlance = (int) (distance * aspect);
 
-                // computing "to" bounds
+                // Computing "to" bounds
                 int scaledGlanceHeight = (int) (glance.getHeight() / aspect);
                 glanceTo.set(bounds.left, bounds.top + distance,
                         bounds.right, bounds.top + distance + scaledGlanceHeight);
 
                 if (!glanceTo.intersect(bounds)) {
-                    // glance is not visible
+                    // Glance is not visible
                     return false;
                 }
 
-                // computing "from" bounds
+                // Computing "from" bounds
                 int scaledBoundsHeight = (int) (bounds.height() * aspect);
                 glanceFrom.set(0, -distanceOnGlance, glance.getWidth(),
                         -distanceOnGlance + scaledBoundsHeight);

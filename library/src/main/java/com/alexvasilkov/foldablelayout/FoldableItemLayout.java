@@ -298,7 +298,7 @@ class FoldableItemLayout extends FrameLayout {
                 bitmapBounds.set(0, top, bw, bottom);
                 if (visibleBounds != null) {
                     if (!bitmapBounds.intersect(visibleBounds)) {
-                        bitmapBounds.set(0, 0, 0, 0); // no intersection
+                        bitmapBounds.set(0, 0, 0, 0); // No intersection
                     }
                 }
             }
@@ -313,26 +313,26 @@ class FoldableItemLayout extends FrameLayout {
             }
             position %= 360f;
             if (position > 180f) {
-                position -= 360f; // now position within (-180; 180]
+                position -= 360f; // Now position is within (-180; 180]
             }
 
             float rotationX = 0f;
             boolean isVisible = true;
 
             if (gravity == Gravity.TOP) {
-                if (position <= -90f || position == 180f) { // (-180; -90] || {180} - will not show
+                if (position <= -90f || position == 180f) { // (-180; -90] || {180} - Will not show
                     isVisible = false;
-                } else if (position < 0f) { // (-90; 0) - applying rotation
+                } else if (position < 0f) { // (-90; 0) - Applying rotation
                     rotationX = position;
                 }
-                // [0; 180) - holding still
+                // [0; 180) - Holding still
             } else {
-                if (position >= 90f) { // [90; 180] - will not show
+                if (position >= 90f) { // [90; 180] - Will not show
                     isVisible = false;
-                } else if (position > 0f) { // (0; 90) - applying rotation
+                } else if (position > 0f) { // (0; 90) - Applying rotation
                     rotationX = position;
                 }
-                // else: (-180; 0] - holding still
+                // (-180; 0] - Holding still
             }
 
             setRotationX(rotationX);
@@ -342,14 +342,14 @@ class FoldableItemLayout extends FrameLayout {
 
             localFoldRotation = position;
 
-            invalidate(); // needed to draw shadow overlay
+            invalidate(); // Needed to draw shadow overlay
         }
 
         void applyRollingDistance(float distance, float scaleY) {
-            // applying translation
+            // Applying translation
             setTranslationY((int) (distance * scaleY + 0.5f));
 
-            // computing clipping for top view (bottom clipping will be 1 - topClipping)
+            // Computing clipping for top view (bottom clipping will be 1 - topClipping)
             final int h = getHeight() / 2;
             final float topClipping = h == 0 ? 0.5f : 0.5f * (h - distance) / h;
 

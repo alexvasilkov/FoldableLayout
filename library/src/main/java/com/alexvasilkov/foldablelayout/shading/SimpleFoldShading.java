@@ -20,7 +20,7 @@ public class SimpleFoldShading implements FoldShading {
 
     @Override
     public void onPreDraw(Canvas canvas, Rect bounds, float rotation, int gravity) {
-        // NO-OP
+        // No-op
     }
 
     @Override
@@ -36,11 +36,11 @@ public class SimpleFoldShading implements FoldShading {
     private float getShadowIntensity(float rotation, int gravity) {
         float intensity = 0f;
         if (gravity == Gravity.TOP) {
-            if (rotation > -90f && rotation < 0f) { // (-90; 0) - rotation is applied
+            if (rotation > -90f && rotation < 0f) { // (-90; 0) - Rotation is applied
                 intensity = -rotation / 90f;
             }
         } else {
-            if (rotation > 0f && rotation < 90f) { // (0; 90) - rotation is applied
+            if (rotation > 0f && rotation < 90f) { // (0; 90) - Rotation is applied
                 intensity = rotation / 90f;
             }
         }

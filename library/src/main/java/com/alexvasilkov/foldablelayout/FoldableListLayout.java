@@ -139,7 +139,7 @@ public class FoldableListLayout extends FrameLayout {
 
     @Override
     protected void dispatchDraw(Canvas canvas) {
-        // We want manually draw only selected children
+        // We want to manually draw selected children
         if (backLayout != null) {
             backLayout.draw(canvas);
         }
@@ -235,11 +235,11 @@ public class FoldableListLayout extends FrameLayout {
         minRotation = 0f;
         maxRotation = count == 0 ? 0f : 180f * (count - 1);
 
-        freeAllLayouts(); // clearing old bindings
+        freeAllLayouts(); // Clearing old bindings
         recycledViews.clear();
         viewsTypesMap.clear();
 
-        // recalculating items
+        // Recalculating items
         setFoldRotation(foldRotation);
     }
 
@@ -306,10 +306,10 @@ public class FoldableListLayout extends FrameLayout {
     private FoldableItemLayout getLayoutForItem(int position) {
         FoldableItemLayout layout = foldableItemsMap.get(position);
         if (layout != null) {
-            return layout; // we already have bound layout
+            return layout; // We already have layout for this position
         }
 
-        // trying to free used layout (far enough from currently requested)
+        // Trying to free used layout (far enough from currently requested)
         int farthestItem = position;
 
         int size = foldableItemsMap.size();
@@ -327,12 +327,12 @@ public class FoldableListLayout extends FrameLayout {
         }
 
         if (layout == null) {
-            // trying to find cached layout
+            // Trying to find cached layout
             layout = foldableItemsCache.poll();
         }
 
         if (layout == null) {
-            // if still no suited layout - create it
+            // If still no suited layout - create it
             layout = new FoldableItemLayout(getContext());
             layout.setFoldShading(foldShading);
             addView(layout, PARAMS);
@@ -346,7 +346,7 @@ public class FoldableListLayout extends FrameLayout {
     }
 
     private void setupAdapterView(FoldableItemLayout layout, int position) {
-        // binding layout to new data
+        // Binding layout to new data
         int type = adapter.getItemViewType(position);
 
         View recycledView = null;
@@ -386,7 +386,7 @@ public class FoldableListLayout extends FrameLayout {
         int size = foldableItemsMap.size();
         for (int i = 0; i < size; i++) {
             FoldableItemLayout layout = foldableItemsMap.valueAt(i);
-            layout.getBaseLayout().removeAllViews(); // clearing old data
+            layout.getBaseLayout().removeAllViews(); // Clearing old data
             foldableItemsCache.offer(layout);
         }
         foldableItemsMap.clear();
