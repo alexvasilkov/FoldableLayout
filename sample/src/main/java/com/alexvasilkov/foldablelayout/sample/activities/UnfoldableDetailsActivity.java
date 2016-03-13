@@ -15,9 +15,8 @@ import com.alexvasilkov.foldablelayout.UnfoldableView;
 import com.alexvasilkov.foldablelayout.sample.R;
 import com.alexvasilkov.foldablelayout.sample.items.Painting;
 import com.alexvasilkov.foldablelayout.sample.items.PaintingsAdapter;
+import com.alexvasilkov.foldablelayout.sample.utils.GlideHelper;
 import com.alexvasilkov.foldablelayout.shading.GlanceFoldShading;
-import com.bumptech.glide.Glide;
-import com.bumptech.glide.load.engine.DiskCacheStrategy;
 
 public class UnfoldableDetailsActivity extends BaseActivity {
 
@@ -85,11 +84,7 @@ public class UnfoldableDetailsActivity extends BaseActivity {
         final TextView title = Views.find(detailsLayout, R.id.details_title);
         final TextView description = Views.find(detailsLayout, R.id.details_text);
 
-        Glide.with(this)
-                .load(painting.getImageId())
-                .dontAnimate()
-                .diskCacheStrategy(DiskCacheStrategy.NONE)
-                .into(image);
+        GlideHelper.loadPaintingImage(image, painting);
         title.setText(painting.getTitle());
 
         SpannableBuilder builder = new SpannableBuilder(this);
