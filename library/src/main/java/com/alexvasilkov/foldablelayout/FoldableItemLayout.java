@@ -39,6 +39,7 @@ class FoldableItemLayout extends FrameLayout {
     private float foldRotation;
     private float scale = 1f;
     private float scaleFactor = 1f;
+    private float scaleFactorY = 1f;
 
     FoldableItemLayout(Context context) {
         super(context);
@@ -108,13 +109,12 @@ class FoldableItemLayout extends FrameLayout {
 
         setInTransformation(rotation != 0f);
 
-        if (isAutoScaleEnabled) {
-            scaleFactor = 1f;
-            if (width > 0) {
-                double sin = Math.abs(Math.sin(Math.toRadians(rotation)));
-                float dw = (float) (height * sin) * CAMERA_DISTANCE_MAGIC_FACTOR;
-                scaleFactor = width / (width + dw);
-            }
+        scaleFactor = 1f;
+
+        if (isAutoScaleEnabled && width > 0) {
+            double sin = Math.abs(Math.sin(Math.toRadians(rotation)));
+            float dw = (float) (height * sin) * CAMERA_DISTANCE_MAGIC_FACTOR;
+            scaleFactor = width / (width + dw);
 
             setScale(scale);
         }
@@ -122,16 +122,29 @@ class FoldableItemLayout extends FrameLayout {
 
     public void setScale(float scale) {
         this.scale = scale;
-        topPart.applyScale(scale * scaleFactor);
-        bottomPart.applyScale(scale * scaleFactor);
+
+        final float scaleX = scale * scaleFactor;
+        final float scaleY = scale * scaleFactor * scaleFactorY;
+
+        baseLayout.setScaleY(scaleFactorY);
+        topPart.setScaleX(scaleX);
+        topPart.setScaleY(scaleY);
+        bottomPart.setScaleX(scaleX);
+        bottomPart.setScaleY(scaleY);
+    }
+
+    public void setScaleFactorY(float scaleFactorY) {
+        this.scaleFactorY = scaleFactorY;
+        setScale(scale);
     }
 
     /**
      * Translation preserving middle line splitting.
      */
     public void setRollingDistance(float distance) {
-        topPart.applyRollingDistance(distance, scale * scaleFactor);
-        bottomPart.applyRollingDistance(distance, scale * scaleFactor);
+        final float scaleY = scale * scaleFactor * scaleFactorY;
+        topPart.applyRollingDistance(distance, scaleY);
+        bottomPart.applyRollingDistance(distance, scaleY);
     }
 
     private void setInTransformation(boolean isInTransformation) {
@@ -184,7 +197,7 @@ class FoldableItemLayout extends FrameLayout {
         private Canvas cacheCanvas;
         private boolean isDrawToCache;
 
-        private BaseLayout(FoldableItemLayout layout) {
+        BaseLayout(FoldableItemLayout layout) {
             super(layout.getContext());
 
             final int matchParent = ViewGroup.LayoutParams.MATCH_PARENT;
@@ -205,11 +218,11 @@ class FoldableItemLayout extends FrameLayout {
             }
         }
 
-        private void setCacheCanvas(Canvas cacheCanvas) {
+        void setCacheCanvas(Canvas cacheCanvas) {
             this.cacheCanvas = cacheCanvas;
         }
 
-        private void setDrawToCache(boolean drawToCache) {
+        void setDrawToCache(boolean drawToCache) {
             if (isDrawToCache != drawToCache) {
                 isDrawToCache = drawToCache;
                 invalidate();
@@ -332,14 +345,9 @@ class FoldableItemLayout extends FrameLayout {
             invalidate(); // needed to draw shadow overlay
         }
 
-        void applyScale(float scale) {
-            setScaleX(scale);
-            setScaleY(scale);
-        }
-
-        void applyRollingDistance(float distance, float scale) {
+        void applyRollingDistance(float distance, float scaleY) {
             // applying translation
-            setTranslationY((int) (distance * scale + 0.5f));
+            setTranslationY((int) (distance * scaleY + 0.5f));
 
             // computing clipping for top view (bottom clipping will be 1 - topClipping)
             final int h = getHeight() / 2;
