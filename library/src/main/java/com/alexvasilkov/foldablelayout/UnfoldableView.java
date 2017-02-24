@@ -157,7 +157,10 @@ public class UnfoldableView extends FoldableListLayout {
         Utils.postOnAnimation(this, new Runnable() {
             @Override
             public void run() {
-                if (scheduledCoverView != null && scheduledDetailsView != null) {
+                if (scheduledCoverView != null
+                        && scheduledDetailsView != null
+                        && scheduledCoverView.getParent() != null
+                        && scheduledDetailsView.getParent() != null) {
                     unfold(scheduledCoverView, scheduledDetailsView);
                     scheduledCoverView = scheduledDetailsView = null;
                 }
