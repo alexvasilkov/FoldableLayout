@@ -19,11 +19,11 @@ Note: **minimum Android SDK version is 14**.
 
 Add dependency to your build.gradle file:
 ```groovy
-compile 'com.alexvasilkov:foldable-layout:1.2.0'
+compile 'com.alexvasilkov:foldable-layout:1.2.1'
 ```
-[Unfoldable details usage](https://github.com/alexvasilkov/FoldableLayout/wiki/Unfoldable-details-usage)
+[Unfoldable details usage (wiki)](https://github.com/alexvasilkov/FoldableLayout/wiki/Unfoldable-details-usage)
 
-[Foldable list usage](https://github.com/alexvasilkov/FoldableLayout/wiki/Foldable-list-usage)
+[Foldable list usage (wiki)](https://github.com/alexvasilkov/FoldableLayout/wiki/Foldable-list-usage)
 
 [API reference](https://github.com/alexvasilkov/FoldableLayout/wiki/API-reference)
 
