@@ -1,7 +1,7 @@
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
 buildscript {
     repositories {
-        mavenCentral()
+        jcenter()
     }
     dependencies {
         classpath 'com.android.tools.build:gradle:2.2.3'
@@ -10,7 +10,7 @@ buildscript {
 
 allprojects { project ->
     repositories {
-        mavenCentral()
+        jcenter()
     }
 
     // Enabling checkstyle for all sub projects
