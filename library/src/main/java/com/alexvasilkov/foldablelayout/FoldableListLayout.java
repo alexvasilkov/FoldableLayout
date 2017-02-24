@@ -392,6 +392,14 @@ public class FoldableListLayout extends FrameLayout {
         foldableItemsMap.clear();
     }
 
+    /**
+     * Returns position of the main visible item.
+     */
+    @SuppressWarnings("unused") // Public API
+    public int getPosition() {
+        return Math.round(foldRotation / 180f);
+    }
+
     public void scrollToPosition(int index) {
         index = Math.max(0, Math.min(index, getCount() - 1));
         animateFold(index * 180f);
