@@ -378,15 +378,17 @@ public class UnfoldableView extends FoldableListLayout {
     }
 
     private void switchViews(View origin, View replacement, ViewGroup.LayoutParams params) {
-        ViewGroup parent = (ViewGroup) origin.getParent();
-
         if (params == null) {
             params = origin.getLayoutParams();
         }
 
-        int index = parent.indexOfChild(origin);
-        parent.removeViewAt(index);
-        parent.addView(replacement, index, params);
+        final ViewGroup parent = (ViewGroup) origin.getParent();
+        // Original view can be removed from parent externally, in this case we can do nothing.
+        if (parent != null) {
+            int index = parent.indexOfChild(origin);
+            parent.removeViewAt(index);
+            parent.addView(replacement, index, params);
+        }
     }
 
     private Rect getViewGlobalPosition(View view) {
