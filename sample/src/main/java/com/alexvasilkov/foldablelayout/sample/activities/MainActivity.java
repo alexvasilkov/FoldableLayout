@@ -1,13 +1,11 @@
 package com.alexvasilkov.foldablelayout.sample.activities;
 
 import android.content.ComponentName;
-import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.text.TextUtils;
-import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
@@ -16,7 +14,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 import com.alexvasilkov.android.commons.adapters.ItemsAdapter;
-import com.alexvasilkov.android.commons.utils.Views;
+import com.alexvasilkov.android.commons.ui.Views;
 import com.alexvasilkov.foldablelayout.sample.R;
 
 import java.util.ArrayList;
@@ -59,32 +57,40 @@ public class MainActivity extends BaseActivity implements ListView.OnItemClickLi
             e.printStackTrace();
         }
 
-        return new SampleAdapter(this, items);
+        return new SampleAdapter(items);
     }
 
-    private static class SampleAdapter extends ItemsAdapter<ActivityInfo> {
+    private static class SampleAdapter extends ItemsAdapter<ActivityInfo, ItemViewHolder> {
 
-        SampleAdapter(Context context, List<ActivityInfo> list) {
-            super(context);
+        SampleAdapter(List<ActivityInfo> list) {
             setItemsList(list);
         }
 
         @Override
-        protected View createView(ActivityInfo item, int pos, ViewGroup parent,
-                LayoutInflater inflater) {
-            return inflater.inflate(android.R.layout.simple_list_item_1, parent, false);
+        protected ItemViewHolder onCreateHolder(ViewGroup parent, int viewType) {
+            return new ItemViewHolder(parent);
         }
 
         @Override
-        protected void bindView(ActivityInfo item, int pos, View convertView) {
-            TextView tv = (TextView) convertView;
-            if (TextUtils.isEmpty(item.nonLocalizedLabel)) {
-                tv.setText(item.labelRes);
+        protected void onBindHolder(ItemViewHolder holder, int position) {
+            final ActivityInfo info = getItem(position);
+
+            if (TextUtils.isEmpty(info.nonLocalizedLabel)) {
+                holder.text.setText(info.labelRes);
             } else {
-                tv.setText(item.nonLocalizedLabel);
+                holder.text.setText(info.nonLocalizedLabel);
             }
         }
 
+    }
+
+    private static class ItemViewHolder extends ItemsAdapter.ViewHolder {
+        final TextView text;
+
+        ItemViewHolder(ViewGroup parent) {
+            super(Views.inflate(parent, android.R.layout.simple_list_item_1));
+            text = (TextView) itemView;
+        }
     }
 
 }

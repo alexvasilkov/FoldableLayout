@@ -10,7 +10,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 import com.alexvasilkov.android.commons.texts.SpannableBuilder;
-import com.alexvasilkov.android.commons.utils.Views;
+import com.alexvasilkov.android.commons.ui.Views;
 import com.alexvasilkov.foldablelayout.UnfoldableView;
 import com.alexvasilkov.foldablelayout.sample.R;
 import com.alexvasilkov.foldablelayout.sample.items.Painting;
